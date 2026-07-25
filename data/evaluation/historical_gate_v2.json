@@ -1,0 +1,67 @@
+{
+  "artifact_type": "historical_production_gate_specification",
+  "gate_specification_version": "historical-chronological-v2.0.0",
+  "status": "locked_proposal",
+  "created_before_candidate_evaluation": true,
+  "comparator_policy": "The active production model is the paired incumbent on every identical eligible match.",
+  "difference_convention": "candidate minus production; negative means lower error",
+  "eligibility": {
+    "validation_years": [2022, 2023, 2024],
+    "training_rule": "all eligible data strictly before each validation year",
+    "same_day_rule": "all predictions for a date precede every update from that date",
+    "same_match_set_required": true,
+    "accuracy_is_required": false,
+    "exposed_2025_2026_period": "retrospective diagnostics only; never pristine confirmation evidence"
+  },
+  "bootstrap": {
+    "method": "paired_date_block_bootstrap",
+    "samples": 2000,
+    "seed": 2440421,
+    "confidence_level": 0.95,
+    "rationale": "Date blocks retain same-day dependence while paired resampling preserves match equality."
+  },
+  "thresholds": {
+    "brier_difference_max": {"value": 0.0, "bootstrap_material_harm": 0.01},
+    "log_loss_difference_max": {"value": 0.0, "bootstrap_material_harm": 0.02},
+    "poisson_deviance_difference_max": {"value": 0.0, "bootstrap_material_harm": 0.03},
+    "minimum_improving_brier_folds": {"value": 2},
+    "minimum_improving_log_loss_folds": {"value": 2},
+    "fold_brier_material_regression": {"value": 0.01},
+    "fold_log_loss_material_regression": {"value": 0.02},
+    "maximum_materially_regressing_folds": {"value": 1},
+    "class_brier_regression_max": {"value": 0.01},
+    "ece_regression_max": {"value": 0.02},
+    "support_aware_mce_regression_max": {"value": 0.05, "minimum_support": 30},
+    "above_80_rate_increase_max": {"value": 0.02, "minimum_support": 20},
+    "home_goal_mae_difference_max": {"value": 0.02},
+    "away_goal_mae_difference_max": {"value": 0.02},
+    "total_goal_mae_difference_max": {"value": 0.03},
+    "goal_difference_mae_difference_max": {"value": 0.02},
+    "absolute_home_bias_regression_max": {"value": 0.05, "bootstrap_material_harm": 0.08},
+    "absolute_away_bias_regression_max": {"value": 0.05, "bootstrap_material_harm": 0.08},
+    "absolute_total_bias_regression_max": {"value": 0.075, "bootstrap_material_harm": 0.10},
+    "fold_absolute_bias_material_regression": {"value": 0.10},
+    "maximum_consistently_harmful_bias_folds": {"value": 1},
+    "catastrophic_home_bias_absolute_max": {"value": 0.35},
+    "catastrophic_away_bias_absolute_max": {"value": 0.35},
+    "catastrophic_total_bias_absolute_max": {"value": 0.50},
+    "expected_goal_bounds": {"minimum": 0.2, "maximum": 4.5},
+    "deterministic_tolerance": {"value": 1e-12}
+  },
+  "threshold_rationale": {
+    "mae": "Two to three hundredths of a goal per match is a conservative non-inferiority allowance relative to roughly one-goal side MAE and 1.3-goal total/margin MAE.",
+    "relative_bias": "Five hundredths per scoring side and 0.075 total are small relative to natural match-level goal variance and materially tighter than catastrophic failure, but do not demand that a candidate outperform an incumbent-specific zero-bias target.",
+    "bias_bootstrap": "The wider 0.08 side and 0.10 total upper bounds account for instability of a signed mean while still excluding operationally meaningful deterioration.",
+    "fold_bias": "A 0.10-goal absolute-bias regression in multiple folds indicates repeatable temporal harm; one fold may vary because scoring environments shift.",
+    "catastrophic_limits": "Absolute 0.35 side or 0.50 total bias would be plainly broken at match scale regardless of incumbent quality.",
+    "independence": "Values were fixed from domain scale, incumbent behavior, prior v1 materiality conventions, and fold variability—not from the exact amount required by a candidate."
+  },
+  "mandatory_integrity_conditions": [
+    "no_temporal_leakage", "chronological_separation", "same_day_batching",
+    "exact_match_set_equality", "deterministic_fitting_and_evaluation",
+    "valid_probabilities", "valid_expected_goals", "parameters_persisted",
+    "feature_definitions_persisted", "inference_path_equivalence",
+    "artifact_version_and_hash_match", "atomic_raw_metrics_persisted"
+  ],
+  "decision_rule": "Every mandatory condition must pass. Gate v2 remains immutable after evaluation; defects require a separately versioned proposal."
+}

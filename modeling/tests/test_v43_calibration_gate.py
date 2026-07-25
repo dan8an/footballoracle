@@ -1,4 +1,5 @@
 import json
+import hashlib
 import math
 from pathlib import Path
 
@@ -104,9 +105,15 @@ def test_calibrator_rejects_mismatched_artifact():
 def test_readiness_fails_safe_for_missing_stale_and_failed_artifacts(tmp_path: Path):
     missing = load_readiness(tmp_path / "missing.json", "v1")
     assert not missing["ready"]
+    raw = tmp_path / "raw.json"; raw.write_text("{}")
     payload = {
         "candidate_model_version": "v2",
         "current_production_model_version": "v1",
+        "historical_gate_passed": True,
+        "prospective_status": "limited",
+        "plan_hash": "locked-plan",
+        "raw_metrics_path": str(raw),
+        "raw_metrics_sha256": hashlib.sha256(raw.read_bytes()).hexdigest(),
         "promotion_recommendation": "promote",
         "gate": {"overall_status": "pass", "conditions": []},
     }
@@ -114,6 +121,7 @@ def test_readiness_fails_safe_for_missing_stale_and_failed_artifacts(tmp_path: P
     path.write_text(json.dumps(payload))
     assert not load_readiness(path, "v1")["ready"]
     payload["promotion_recommendation"] = "keep_current_experimental_candidate"
+    payload["historical_gate_passed"] = False
     payload["gate"] = {
         "overall_status": "fail",
         "conditions": [{"passed": False, "explanation": "bootstrap failed"}],
@@ -123,9 +131,16 @@ def test_readiness_fails_safe_for_missing_stale_and_failed_artifacts(tmp_path: P
 
 
 def test_readiness_pass_language_requires_every_condition(tmp_path: Path):
+    raw = tmp_path / "raw.json"; raw.write_text("{}")
     payload = {
         "candidate_model_version": "v2",
         "current_production_model_version": "v1",
+        "historical_gate_passed": True,
+        "prospective_status": "limited",
+        "prospective_match_count": 3,
+        "plan_hash": "locked-plan",
+        "raw_metrics_path": str(raw),
+        "raw_metrics_sha256": hashlib.sha256(raw.read_bytes()).hexdigest(),
         "promotion_recommendation": "promote",
         "gate": {
             "overall_status": "pass",
@@ -136,4 +151,5 @@ def test_readiness_pass_language_requires_every_condition(tmp_path: Path):
     path.write_text(json.dumps(payload))
     result = load_readiness(path, "v2")
     assert result["ready"]
-    assert "does not guarantee future accuracy" in result["message"]
+    assert "does not guarantee future performance" in result["message"]
+    assert "3 prospective matches" in result["message"]

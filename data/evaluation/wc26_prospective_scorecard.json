@@ -1,0 +1,17 @@
+{
+  "prospective_status": "limited",
+  "models": {},
+  "paired_comparisons": [],
+  "tracked_model_versions": [
+    "elo-context-v4.2.1",
+    "elo-context-v4.4-opponent-adjusted-xg-experimental"
+  ],
+  "prospective_prediction_count": 0,
+  "paired_production_candidate_count": 0,
+  "generation_timestamp_range": null,
+  "message": "Prospective tournament evidence is still limited. Historical validation does not guarantee future performance.",
+  "artifact_version": 1,
+  "ledger_path": "data/evaluation/wc26_prospective_predictions.json",
+  "eligibility_rule": "persisted generation timestamp strictly before official kickoff; no historical backfills",
+  "retrospective_2025_2026_note": "Previously exposed predictions and backtests are retrospective only, not pristine confirmation evidence."
+}

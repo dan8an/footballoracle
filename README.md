@@ -177,6 +177,11 @@ The command reads the latest canonical prediction run and simulates 50,000
 tournaments by default. For a smaller manual check, use
 `python scripts/run_simulations.py --simulations 1000 --seed 2026`.
 
+For cutoff-conditioned historical tournament forecasts, apply
+`supabase/migrations/202607250001_historical_simulation_snapshots.sql` and
+follow [docs/historical-simulation-snapshots.md](docs/historical-simulation-snapshots.md).
+Audit commands use `--dry-run`; production writes are always explicit.
+
 The script imports completed fixtures, team match statistics, player match
 statistics, and lineups. Provider fixture/team/player IDs and unique database
 indexes make repeated runs update existing records instead of duplicating

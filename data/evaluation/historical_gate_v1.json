@@ -1,0 +1,48 @@
+{
+  "artifact_type": "historical_production_gate_specification",
+  "gate_specification_version": "historical-chronological-v1",
+  "status": "locked",
+  "comparator_version": "elo-context-v4.2.1",
+  "candidate_eligibility": {
+    "validation_years": [2022, 2023, 2024],
+    "training_rule": "all eligible matches strictly before the validation year",
+    "same_day_rule": "predict every match on a date before updating histories with any result from that date",
+    "same_match_set_required": true,
+    "exposed_2025_2026_period": "retrospective diagnostics only; never pristine or independently confirmatory"
+  },
+  "bootstrap": {
+    "method": "date_block_paired_bootstrap",
+    "samples": 2000,
+    "seed": 440421,
+    "confidence_level": 0.95,
+    "rationale": "Date blocks preserve same-day dependence and paired candidate/comparator observations; deterministic sampling makes reruns auditable."
+  },
+  "thresholds": {
+    "brier_difference": {"operator": "lt", "value": 0.0, "material_regression_margin": 0.01, "rationale": "Brier is the primary multiclass proper score; one percentage point is meaningful harm on its observed scale."},
+    "log_loss_difference": {"operator": "lt", "value": 0.0, "material_regression_margin": 0.02, "rationale": "Log loss must improve and a two-hundredths increase is treated as material harm."},
+    "poisson_deviance_difference": {"operator": "lt", "value": 0.0, "material_regression_margin": 0.03, "rationale": "The changed goal model must improve likelihood-based goal fit; three-hundredths is the harm margin."},
+    "goal_difference_mae_difference_max": {"value": 0.01, "rationale": "A small tolerance permits noise while prohibiting a meaningful loss of goal-margin quality."},
+    "simple_baseline_brier_regression_max": {"value": 0.0, "rationale": "Candidate must beat equal one-third probabilities on the identical matches."},
+    "fold_brier_material_regression": {"value": 0.01, "rationale": "Predeclared absolute fold-scale materiality threshold."},
+    "fold_log_loss_material_regression": {"value": 0.02, "rationale": "Predeclared absolute fold-scale materiality threshold."},
+    "minimum_improving_folds": {"value": 2, "rationale": "Requires temporal stability across a majority of three folds."},
+    "maximum_materially_regressing_folds": {"value": 1, "rationale": "A candidate may not repeatedly cause material harm."},
+    "single_fold_improvement_share_max": {"value": 0.8, "rationale": "Flags concentration when one fold supplies nearly all positive aggregate gain."},
+    "class_brier_regression_max": {"value": 0.01, "rationale": "Protects home, draw, and away outcomes from masked aggregate harm."},
+    "total_goal_bias_absolute_max": {"value": 0.15, "rationale": "Average total-goal bias above 0.15 goals per match is operationally severe."},
+    "side_goal_bias_absolute_max": {"value": 0.10, "rationale": "Average home or away bias above 0.10 goals is operationally severe."},
+    "support_aware_mce_regression_max": {"value": 0.05, "minimum_support": 30, "rationale": "Only adequately supported fixed-width cells gate calibration; sparse raw MCE remains reported."},
+    "above_80_rate_increase_max": {"value": 0.02, "minimum_support": 20, "rationale": "Prevents unsupported creation of extreme forecasts."},
+    "high_confidence_gap_regression_max": {"value": 0.05, "minimum_support": 20, "rationale": "High-confidence calibration gates only operate with useful support."},
+    "mid_high_confidence_gap_max": {"value": 0.15, "minimum_support": 20, "rationale": "60-80 percent buckets must be reasonably calibrated when sufficiently populated."},
+    "deterministic_metric_tolerance": {"value": 1e-12, "rationale": "Identical code, plan, data, and parameters should reproduce floating metrics to numerical precision."},
+    "expected_goal_bounds": {"minimum": 0.2, "maximum": 4.5, "rationale": "Matches the documented model domain and prevents pathological Poisson means."}
+  },
+  "integrity_requirements": [
+    "no_temporal_leakage", "chronological_separation", "same_day_batching",
+    "fold_local_parameter_fitting", "valid_probabilities", "valid_expected_goals",
+    "parameters_persisted", "feature_definitions_persisted", "inference_path_equivalence",
+    "all_artifacts_generated", "artifact_version_match", "deterministic_rerun"
+  ],
+  "decision_rule": "Every required condition must pass. Thresholds and candidate parameters may not change after the experiment plan is locked."
+}

@@ -1,0 +1,757 @@
+{
+  "artifact_version": 1,
+  "purpose": "Gate-design sensitivity, not candidate tuning.",
+  "models": {
+    "simple_equal_probability_baseline": {
+      "status": "reject",
+      "reasons": [
+        "Does not improve Brier or log loss versus production."
+      ]
+    },
+    "production_v421": {
+      "status": "reference",
+      "quality_portions": "MAE, bias safety, calibration, and integrity are evaluated as the incumbent baseline; promotion-improvement conditions are not applicable to comparison against itself.",
+      "absolute_bias_safety_passed": true
+    },
+    "elo-context-v4.4-opponent-adjusted-xg-experimental": {
+      "status": "reject",
+      "failed_conditions": [
+        "bootstrap_total_goal_bias_excludes_material_harm"
+      ]
+    },
+    "elo-context-v4.4.1-home-xg-correction-experimental": {
+      "status": "reject",
+      "failed_conditions": [
+        "bootstrap_total_goal_bias_excludes_material_harm"
+      ]
+    },
+    "v43_variants": {
+      "status": "not_comparable",
+      "reason": "Compatible artifacts use a different exposed 165-match period, not the locked 392-match v2 set."
+    },
+    "clearly_inferior_synthetic": {
+      "status": "reject",
+      "metrics": {
+        "matches": 392,
+        "multiclass_brier": 0.6666666667,
+        "log_loss": 1.0986122886681098,
+        "poisson_deviance_per_team": 1.6995253409668367,
+        "accuracy": 0.49489795918367346,
+        "class_brier": {
+          "home": 0.21724156031010045,
+          "draw": 0.19413328663373822,
+          "away": 0.19424284247291537
+        },
+        "mean_probability_actual_class": 0.39100131370432745,
+        "predicted_class_frequencies": {
+          "home": 0.40142044808966415,
+          "draw": 0.2447648000856045,
+          "away": 0.3538147518247316
+        },
+        "actual_class_frequencies": {
+          "home": 0.44387755102040816,
+          "draw": 0.26785714285714285,
+          "away": 0.288265306122449
+        },
+        "home_goal_mae": 1.5189834183673472,
+        "away_goal_mae": 1.3833316326530616,
+        "total_goal_mae": 2.065995153061225,
+        "goal_difference_mae": 1.9043670918367357,
+        "home_goal_bias": 0.6,
+        "away_goal_bias": -0.5,
+        "total_goal_bias": 0.1,
+        "fixed_width_reliability": [
+          {
+            "class": "home",
+            "lower": 0.0,
+            "upper": 0.1,
+            "count": 1,
+            "mean_probability": 0.09482308326085853,
+            "observed_rate": 0.0,
+            "absolute_gap": 0.09482308326085853
+          },
+          {
+            "class": "home",
+            "lower": 0.1,
+            "upper": 0.2,
+            "count": 25,
+            "mean_probability": 0.17807744782334656,
+            "observed_rate": 0.2,
+            "absolute_gap": 0.021922552176653454
+          },
+          {
+            "class": "home",
+            "lower": 0.2,
+            "upper": 0.3,
+            "count": 84,
+            "mean_probability": 0.2539901434110029,
+            "observed_rate": 0.27380952380952384,
+            "absolute_gap": 0.019819380398520936
+          },
+          {
+            "class": "home",
+            "lower": 0.3,
+            "upper": 0.4,
+            "count": 104,
+            "mean_probability": 0.34815880527204995,
+            "observed_rate": 0.375,
+            "absolute_gap": 0.026841194727950046
+          },
+          {
+            "class": "home",
+            "lower": 0.4,
+            "upper": 0.5,
+            "count": 75,
+            "mean_probability": 0.4495616581576605,
+            "observed_rate": 0.4266666666666667,
+            "absolute_gap": 0.022894991490993832
+          },
+          {
+            "class": "home",
+            "lower": 0.5,
+            "upper": 0.6,
+            "count": 50,
+            "mean_probability": 0.5439058909536101,
+            "observed_rate": 0.62,
+            "absolute_gap": 0.07609410904638991
+          },
+          {
+            "class": "home",
+            "lower": 0.6,
+            "upper": 0.7,
+            "count": 50,
+            "mean_probability": 0.6433044341212508,
+            "observed_rate": 0.82,
+            "absolute_gap": 0.17669556587874913
+          },
+          {
+            "class": "home",
+            "lower": 0.7,
+            "upper": 0.8,
+            "count": 3,
+            "mean_probability": 0.7295759873062689,
+            "observed_rate": 1.0,
+            "absolute_gap": 0.27042401269373106
+          },
+          {
+            "class": "home",
+            "lower": 0.8,
+            "upper": 0.9,
+            "count": 0,
+            "mean_probability": null,
+            "observed_rate": null,
+            "absolute_gap": null
+          },
+          {
+            "class": "home",
+            "lower": 0.9,
+            "upper": 1.0,
+            "count": 0,
+            "mean_probability": null,
+            "observed_rate": null,
+            "absolute_gap": null
+          },
+          {
+            "class": "draw",
+            "lower": 0.0,
+            "upper": 0.1,
+            "count": 0,
+            "mean_probability": null,
+            "observed_rate": null,
+            "absolute_gap": null
+          },
+          {
+            "class": "draw",
+            "lower": 0.1,
+            "upper": 0.2,
+            "count": 92,
+            "mean_probability": 0.18640189959079134,
+            "observed_rate": 0.1956521739130435,
+            "absolute_gap": 0.009250274322252144
+          },
+          {
+            "class": "draw",
+            "lower": 0.2,
+            "upper": 0.3,
+            "count": 285,
+            "mean_probability": 0.26050400008856256,
+            "observed_rate": 0.2982456140350877,
+            "absolute_gap": 0.03774161394652514
+          },
+          {
+            "class": "draw",
+            "lower": 0.3,
+            "upper": 0.4,
+            "count": 15,
+            "mean_probability": 0.30367912306424844,
+            "observed_rate": 0.13333333333333333,
+            "absolute_gap": 0.1703457897309151
+          },
+          {
+            "class": "draw",
+            "lower": 0.4,
+            "upper": 0.5,
+            "count": 0,
+            "mean_probability": null,
+            "observed_rate": null,
+            "absolute_gap": null
+          },
+          {
+            "class": "draw",
+            "lower": 0.5,
+            "upper": 0.6,
+            "count": 0,
+            "mean_probability": null,
+            "observed_rate": null,
+            "absolute_gap": null
+          },
+          {
+            "class": "draw",
+            "lower": 0.6,
+            "upper": 0.7,
+            "count": 0,
+            "mean_probability": null,
+            "observed_rate": null,
+            "absolute_gap": null
+          },
+          {
+            "class": "draw",
+            "lower": 0.7,
+            "upper": 0.8,
+            "count": 0,
+            "mean_probability": null,
+            "observed_rate": null,
+            "absolute_gap": null
+          },
+          {
+            "class": "draw",
+            "lower": 0.8,
+            "upper": 0.9,
+            "count": 0,
+            "mean_probability": null,
+            "observed_rate": null,
+            "absolute_gap": null
+          },
+          {
+            "class": "draw",
+            "lower": 0.9,
+            "upper": 1.0,
+            "count": 0,
+            "mean_probability": null,
+            "observed_rate": null,
+            "absolute_gap": null
+          },
+          {
+            "class": "away",
+            "lower": 0.0,
+            "upper": 0.1,
+            "count": 2,
+            "mean_probability": 0.07114313374803385,
+            "observed_rate": 0.0,
+            "absolute_gap": 0.07114313374803385
+          },
+          {
+            "class": "away",
+            "lower": 0.1,
+            "upper": 0.2,
+            "count": 47,
+            "mean_probability": 0.16691995954612873,
+            "observed_rate": 0.06382978723404255,
+            "absolute_gap": 0.10309017231208618
+          },
+          {
+            "class": "away",
+            "lower": 0.2,
+            "upper": 0.3,
+            "count": 109,
+            "mean_probability": 0.2542916670934802,
+            "observed_rate": 0.1834862385321101,
+            "absolute_gap": 0.07080542856137012
+          },
+          {
+            "class": "away",
+            "lower": 0.3,
+            "upper": 0.4,
+            "count": 106,
+            "mean_probability": 0.3460016599276131,
+            "observed_rate": 0.330188679245283,
+            "absolute_gap": 0.015812980682330113
+          },
+          {
+            "class": "away",
+            "lower": 0.4,
+            "upper": 0.5,
+            "count": 61,
+            "mean_probability": 0.44552233456972845,
+            "observed_rate": 0.39344262295081966,
+            "absolute_gap": 0.052079711618908786
+          },
+          {
+            "class": "away",
+            "lower": 0.5,
+            "upper": 0.6,
+            "count": 39,
+            "mean_probability": 0.5458469225719842,
+            "observed_rate": 0.46153846153846156,
+            "absolute_gap": 0.08430846103352263
+          },
+          {
+            "class": "away",
+            "lower": 0.6,
+            "upper": 0.7,
+            "count": 27,
+            "mean_probability": 0.6344007917708998,
+            "observed_rate": 0.4444444444444444,
+            "absolute_gap": 0.1899563473264554
+          },
+          {
+            "class": "away",
+            "lower": 0.7,
+            "upper": 0.8,
+            "count": 1,
+            "mean_probability": 0.7201769167391415,
+            "observed_rate": 1.0,
+            "absolute_gap": 0.2798230832608585
+          },
+          {
+            "class": "away",
+            "lower": 0.8,
+            "upper": 0.9,
+            "count": 0,
+            "mean_probability": null,
+            "observed_rate": null,
+            "absolute_gap": null
+          },
+          {
+            "class": "away",
+            "lower": 0.9,
+            "upper": 1.0,
+            "count": 0,
+            "mean_probability": null,
+            "observed_rate": null,
+            "absolute_gap": null
+          }
+        ],
+        "adaptive_reliability": [
+          {
+            "class": "home",
+            "lower": 0.09482308326085853,
+            "upper": 0.20469039790602306,
+            "count": 30,
+            "mean_probability": 0.17849336309326572,
+            "observed_rate": 0.23333333333333334,
+            "absolute_gap": 0.05483997024006762
+          },
+          {
+            "class": "home",
+            "lower": 0.20744713443416832,
+            "upper": 0.24661725321884057,
+            "count": 30,
+            "mean_probability": 0.22850671739911707,
+            "observed_rate": 0.3,
+            "absolute_gap": 0.07149328260088292
+          },
+          {
+            "class": "home",
+            "lower": 0.2470559781617679,
+            "upper": 0.27961954535715383,
+            "count": 30,
+            "mean_probability": 0.2617890008874063,
+            "observed_rate": 0.23333333333333334,
+            "absolute_gap": 0.028455667554072972
+          },
+          {
+            "class": "home",
+            "lower": 0.2806027357636302,
+            "upper": 0.3122059860521668,
+            "count": 30,
+            "mean_probability": 0.2959975464997232,
+            "observed_rate": 0.36666666666666664,
+            "absolute_gap": 0.07066912016694343
+          },
+          {
+            "class": "home",
+            "lower": 0.3122869952856414,
+            "upper": 0.33578893075682215,
+            "count": 30,
+            "mean_probability": 0.32211221598045076,
+            "observed_rate": 0.3333333333333333,
+            "absolute_gap": 0.01122111735288256
+          },
+          {
+            "class": "home",
+            "lower": 0.3386542048786051,
+            "upper": 0.364341961651766,
+            "count": 30,
+            "mean_probability": 0.35155397706733754,
+            "observed_rate": 0.36666666666666664,
+            "absolute_gap": 0.015112689599329099
+          },
+          {
+            "class": "home",
+            "lower": 0.365482864852006,
+            "upper": 0.39268318433272587,
+            "count": 31,
+            "mean_probability": 0.37891407386532394,
+            "observed_rate": 0.3870967741935484,
+            "absolute_gap": 0.008182700328224435
+          },
+          {
+            "class": "home",
+            "lower": 0.39431138327050114,
+            "upper": 0.4356500418557249,
+            "count": 30,
+            "mean_probability": 0.4170024697247578,
+            "observed_rate": 0.36666666666666664,
+            "absolute_gap": 0.050335803058091155
+          },
+          {
+            "class": "home",
+            "lower": 0.4361117344756108,
+            "upper": 0.4762897378639412,
+            "count": 30,
+            "mean_probability": 0.4524696494914394,
+            "observed_rate": 0.3333333333333333,
+            "absolute_gap": 0.1191363161581061
+          },
+          {
+            "class": "home",
+            "lower": 0.47955511835671455,
+            "upper": 0.5100885475125683,
+            "count": 30,
+            "mean_probability": 0.4961549819901879,
+            "observed_rate": 0.6,
+            "absolute_gap": 0.10384501800981205
+          },
+          {
+            "class": "home",
+            "lower": 0.5133721052959594,
+            "upper": 0.5841449452468005,
+            "count": 30,
+            "mean_probability": 0.5470122199056094,
+            "observed_rate": 0.6,
+            "absolute_gap": 0.052987780094390535
+          },
+          {
+            "class": "home",
+            "lower": 0.5859357937216805,
+            "upper": 0.6335847021127022,
+            "count": 30,
+            "mean_probability": 0.6130939342267762,
+            "observed_rate": 0.8666666666666667,
+            "absolute_gap": 0.25357273243989054
+          },
+          {
+            "class": "home",
+            "lower": 0.634361255894705,
+            "upper": 0.7486681299883305,
+            "count": 31,
+            "mean_probability": 0.6672547443013289,
+            "observed_rate": 0.7741935483870968,
+            "absolute_gap": 0.10693880408576784
+          },
+          {
+            "class": "draw",
+            "lower": 0.185,
+            "upper": 0.185,
+            "count": 30,
+            "mean_probability": 0.18499999999999991,
+            "observed_rate": 0.0,
+            "absolute_gap": 0.18499999999999991
+          },
+          {
+            "class": "draw",
+            "lower": 0.185,
+            "upper": 0.185,
+            "count": 30,
+            "mean_probability": 0.18499999999999991,
+            "observed_rate": 0.03333333333333333,
+            "absolute_gap": 0.1516666666666666
+          },
+          {
+            "class": "draw",
+            "lower": 0.185,
+            "upper": 0.19650963941002667,
+            "count": 30,
+            "mean_probability": 0.1883235015681957,
+            "observed_rate": 0.5666666666666667,
+            "absolute_gap": 0.378343165098471
+          },
+          {
+            "class": "draw",
+            "lower": 0.199272021193323,
+            "upper": 0.22024096484631414,
+            "count": 30,
+            "mean_probability": 0.20771890483321073,
+            "observed_rate": 0.26666666666666666,
+            "absolute_gap": 0.05894776183345593
+          },
+          {
+            "class": "draw",
+            "lower": 0.22196861267167328,
+            "upper": 0.23474502308646458,
+            "count": 30,
+            "mean_probability": 0.2286311693159281,
+            "observed_rate": 0.16666666666666666,
+            "absolute_gap": 0.061964502649261455
+          },
+          {
+            "class": "draw",
+            "lower": 0.23500584042694977,
+            "upper": 0.24771569026338902,
+            "count": 30,
+            "mean_probability": 0.24148761059995869,
+            "observed_rate": 0.23333333333333334,
+            "absolute_gap": 0.008154277266625348
+          },
+          {
+            "class": "draw",
+            "lower": 0.24790596319907723,
+            "upper": 0.25860247633939376,
+            "count": 31,
+            "mean_probability": 0.25274764381750303,
+            "observed_rate": 0.22580645161290322,
+            "absolute_gap": 0.026941192204599812
+          },
+          {
+            "class": "draw",
+            "lower": 0.2590209214576339,
+            "upper": 0.26995229624816247,
+            "count": 30,
+            "mean_probability": 0.26513608295850494,
+            "observed_rate": 0.4,
+            "absolute_gap": 0.13486391704149508
+          },
+          {
+            "class": "draw",
+            "lower": 0.2701678888242679,
+            "upper": 0.2768807383515341,
+            "count": 30,
+            "mean_probability": 0.2736049638660318,
+            "observed_rate": 0.3,
+            "absolute_gap": 0.026395036133968208
+          },
+          {
+            "class": "draw",
+            "lower": 0.2769993521545747,
+            "upper": 0.2808708100410506,
+            "count": 30,
+            "mean_probability": 0.2789911512454444,
+            "observed_rate": 0.1,
+            "absolute_gap": 0.17899115124544437
+          },
+          {
+            "class": "draw",
+            "lower": 0.2809543957506752,
+            "upper": 0.28685717280304235,
+            "count": 30,
+            "mean_probability": 0.28332984218452634,
+            "observed_rate": 0.5,
+            "absolute_gap": 0.21667015781547366
+          },
+          {
+            "class": "draw",
+            "lower": 0.2874359000749359,
+            "upper": 0.29300154740761214,
+            "count": 30,
+            "mean_probability": 0.2904433196426198,
+            "observed_rate": 0.5,
+            "absolute_gap": 0.20955668035738018
+          },
+          {
+            "class": "draw",
+            "lower": 0.29306281411421864,
+            "upper": 0.3100084705490954,
+            "count": 31,
+            "mean_probability": 0.2994396222187639,
+            "observed_rate": 0.1935483870967742,
+            "absolute_gap": 0.10589123512198972
+          },
+          {
+            "class": "away",
+            "lower": 0.06633187001166932,
+            "upper": 0.17934299634282277,
+            "count": 30,
+            "mean_probability": 0.14664880608511704,
+            "observed_rate": 0.1,
+            "absolute_gap": 0.04664880608511704
+          },
+          {
+            "class": "away",
+            "lower": 0.18063874410529487,
+            "upper": 0.22091427835556718,
+            "count": 30,
+            "mean_probability": 0.1958063249786678,
+            "observed_rate": 0.03333333333333333,
+            "absolute_gap": 0.16247299164533446
+          },
+          {
+            "class": "away",
+            "lower": 0.22154390697626303,
+            "upper": 0.24625987764468174,
+            "count": 30,
+            "mean_probability": 0.23209189126401675,
+            "observed_rate": 0.13333333333333333,
+            "absolute_gap": 0.09875855793068342
+          },
+          {
+            "class": "away",
+            "lower": 0.24678169358323337,
+            "upper": 0.2677561138792519,
+            "count": 30,
+            "mean_probability": 0.25501176126195774,
+            "observed_rate": 0.13333333333333333,
+            "absolute_gap": 0.1216784279286244
+          },
+          {
+            "class": "away",
+            "lower": 0.2681886651992281,
+            "upper": 0.2935043817239754,
+            "count": 30,
+            "mean_probability": 0.28147770778281267,
+            "observed_rate": 0.26666666666666666,
+            "absolute_gap": 0.014811041116146006
+          },
+          {
+            "class": "away",
+            "lower": 0.2942254423058532,
+            "upper": 0.3196877286714732,
+            "count": 30,
+            "mean_probability": 0.30513102692833904,
+            "observed_rate": 0.3333333333333333,
+            "absolute_gap": 0.02820230640499427
+          },
+          {
+            "class": "away",
+            "lower": 0.31991392773583405,
+            "upper": 0.34397870488695753,
+            "count": 31,
+            "mean_probability": 0.3330664571672926,
+            "observed_rate": 0.2903225806451613,
+            "absolute_gap": 0.0427438765221313
+          },
+          {
+            "class": "away",
+            "lower": 0.3446945595271459,
+            "upper": 0.372060543968029,
+            "count": 30,
+            "mean_probability": 0.3569577280132031,
+            "observed_rate": 0.36666666666666664,
+            "absolute_gap": 0.009708938653463561
+          },
+          {
+            "class": "away",
+            "lower": 0.3729581721073984,
+            "upper": 0.41259890565634166,
+            "count": 30,
+            "mean_probability": 0.38997746794663896,
+            "observed_rate": 0.3333333333333333,
+            "absolute_gap": 0.05664413461330564
+          },
+          {
+            "class": "away",
+            "lower": 0.4156118931998438,
+            "upper": 0.44895552306144443,
+            "count": 30,
+            "mean_probability": 0.429696829134617,
+            "observed_rate": 0.4666666666666667,
+            "absolute_gap": 0.03696983753204969
+          },
+          {
+            "class": "away",
+            "lower": 0.4500874045817154,
+            "upper": 0.5096198062727435,
+            "count": 30,
+            "mean_probability": 0.4827418887969411,
+            "observed_rate": 0.3333333333333333,
+            "absolute_gap": 0.14940855546360776
+          },
+          {
+            "class": "away",
+            "lower": 0.5098511606747491,
+            "upper": 0.5963898383586731,
+            "count": 30,
+            "mean_probability": 0.5486257277028216,
+            "observed_rate": 0.5333333333333333,
+            "absolute_gap": 0.01529239436948826
+          },
+          {
+            "class": "away",
+            "lower": 0.596755151721527,
+            "upper": 0.7201769167391415,
+            "count": 31,
+            "mean_probability": 0.6337196047178931,
+            "observed_rate": 0.41935483870967744,
+            "absolute_gap": 0.2143647660082157
+          }
+        ],
+        "calibration": {
+          "expected_calibration_error": 0.05160261920000803,
+          "maximum_calibration_error": 0.2798230832608585,
+          "maximum_calibration_error_bucket": {
+            "class": "away",
+            "lower": 0.7,
+            "upper": 0.8,
+            "count": 1,
+            "mean_probability": 0.7201769167391415,
+            "observed_rate": 1.0,
+            "absolute_gap": 0.2798230832608585
+          },
+          "support_aware_minimum_count": 30,
+          "support_aware_maximum_calibration_error": 0.17669556587874913
+        },
+        "confidence_buckets": {
+          "below_40": {
+            "count": 86,
+            "mean_predicted_favorite_probability": 0.37498482905025804,
+            "observed_favorite_win_rate": 0.37209302325581395,
+            "absolute_calibration_gap": 0.002891805794444091,
+            "error_rate": 0.627906976744186
+          },
+          "40_50": {
+            "count": 136,
+            "mean_predicted_favorite_probability": 0.4477499027248382,
+            "observed_favorite_win_rate": 0.4117647058823529,
+            "absolute_calibration_gap": 0.0359851968424853,
+            "error_rate": 0.5882352941176471
+          },
+          "50_60": {
+            "count": 89,
+            "mean_predicted_favorite_probability": 0.5447564553706505,
+            "observed_favorite_win_rate": 0.550561797752809,
+            "absolute_calibration_gap": 0.005805342382158463,
+            "error_rate": 0.449438202247191
+          },
+          "60_70": {
+            "count": 77,
+            "mean_predicted_favorite_probability": 0.640182377712686,
+            "observed_favorite_win_rate": 0.6883116883116883,
+            "absolute_calibration_gap": 0.04812931059900227,
+            "error_rate": 0.3116883116883117
+          },
+          "70_80": {
+            "count": 4,
+            "mean_predicted_favorite_probability": 0.7272262196644872,
+            "observed_favorite_win_rate": 1.0,
+            "absolute_calibration_gap": 0.2727737803355128,
+            "error_rate": 0.0
+          },
+          "above_80": {
+            "count": 0,
+            "mean_predicted_favorite_probability": null,
+            "observed_favorite_win_rate": null,
+            "absolute_calibration_gap": null,
+            "error_rate": null
+          }
+        }
+      },
+      "reasons": [
+        "Fails proper scores, Poisson deviance, all MAE limits, and catastrophic bias safety."
+      ]
+    }
+  },
+  "leave_one_condition_out": {
+    "conclusion": "No single removal makes the clearly inferior synthetic candidate pass; it fails independent result-probability, goal-likelihood, MAE, and catastrophic-safety families."
+  },
+  "single_metric_dependency": false
+}

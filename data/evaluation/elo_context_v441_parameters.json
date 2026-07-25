@@ -1,0 +1,40 @@
+{
+  "model_version": "elo-context-v4.4.1-home-xg-correction-experimental",
+  "architecture": "regularized_home_advantage",
+  "shared": {
+    "type": "ridge_poisson_glm",
+    "coefficients": [
+      0.1971317069508898,
+      0.5287676387000452,
+      0.22717518978094103,
+      0.16433614106600086,
+      0.05321083537559488,
+      0.15148390461797295,
+      0.24933353318859583,
+      -0.154898419240842,
+      0.035635439842966354,
+      0.11271610734544915,
+      -0.1295872325097787
+    ],
+    "feature_names": [
+      "intercept",
+      "elo_side_gap",
+      "long_attack",
+      "opponent_defense_weakness",
+      "short_attack",
+      "opponent_short_defense_weakness",
+      "home_non_neutral",
+      "qualification",
+      "nations_league",
+      "world_cup",
+      "other_competitive"
+    ],
+    "ridge": 8.0
+  },
+  "home": null,
+  "away": null,
+  "fitted_through": "2024-12-31",
+  "selection_protocol": "predefined candidates selected on 2020-2021 inner chronological folds only",
+  "direct_bias_addback": false,
+  "dataset_sha256": "208834ed9039fbe6ab61612894d58b467925eb11c65655c307148d92b00423c2"
+}

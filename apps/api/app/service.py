@@ -12,6 +12,13 @@ from sqlalchemy import Engine, MetaData, Table, inspect, select, text
 from modeling.src.data import ROOT, build_fixtures, load_teams, load_venues, validate_tournament
 from modeling.src.features.context import ContextRepository
 from modeling.src.flags import flag_for_team
+from modeling.src.historical_snapshots import (
+    SNAPSHOTS,
+    get_snapshot,
+    parse_utc,
+    resolve_snapshot_cutoff,
+    snapshot_payload,
+)
 from modeling.src.poisson import predict_match
 from modeling.src.simulation import (
     PUBLISHED_SIMULATION_ITERATIONS,
@@ -197,6 +204,16 @@ class DatabaseSimulationSource:
 
     def load_latest(self) -> dict[str, Any] | None:
         table_prefix = "public." if self.engine.dialect.name == "postgresql" else ""
+        schema = "public" if self.engine.dialect.name == "postgresql" else None
+        columns = {
+            column["name"]
+            for column in inspect(self.engine).get_columns(
+                "simulation_runs", schema=schema
+            )
+        }
+        current_run_filter = (
+            "and sr.snapshot_key is null" if "snapshot_key" in columns else ""
+        )
         with self.engine.connect() as connection:
             latest = connection.execute(
                 text(
@@ -208,6 +225,7 @@ class DatabaseSimulationSource:
                       from {table_prefix}team_simulation_results tsr
                       where tsr.simulation_run_id = sr.id
                     )
+                    {current_run_filter}
                     order by sr.created_at desc, sr.id desc
                     limit 1
                     """
@@ -233,6 +251,112 @@ class DatabaseSimulationSource:
             "results": rows,
             "model_inputs": self._load_model_inputs(),
         }
+
+    def load_snapshot(self, snapshot_key: str) -> dict[str, Any] | None:
+        get_snapshot(snapshot_key)
+        schema = "public" if self.engine.dialect.name == "postgresql" else None
+        columns = {
+            column["name"]
+            for column in inspect(self.engine).get_columns(
+                "simulation_runs", schema=schema
+            )
+        }
+        if "snapshot_key" not in columns:
+            return None
+        table_prefix = "public." if self.engine.dialect.name == "postgresql" else ""
+        status_filter = (
+            "and coalesce(sr.status, 'completed') = 'completed'"
+            if "status" in columns else ""
+        )
+        with self.engine.connect() as connection:
+            run = connection.execute(
+                text(
+                    f"""
+                    select sr.*
+                    from {table_prefix}simulation_runs sr
+                    where sr.snapshot_key = :snapshot_key
+                      {status_filter}
+                      and exists (
+                        select 1
+                        from {table_prefix}team_simulation_results tsr
+                        where tsr.simulation_run_id = sr.id
+                      )
+                    order by sr.created_at desc, sr.id desc
+                    limit 1
+                    """
+                ),
+                {"snapshot_key": snapshot_key},
+            ).mappings().one_or_none()
+            if run is None:
+                return None
+            rows = [
+                dict(row)
+                for row in connection.execute(
+                    text(
+                        f"""
+                        select *
+                        from {table_prefix}team_simulation_results
+                        where simulation_run_id = :simulation_run_id
+                        """
+                    ),
+                    {"simulation_run_id": run["id"]},
+                ).mappings()
+            ]
+        return {"run": dict(run), "results": rows, "model_inputs": {}}
+
+    def list_snapshots(self) -> list[dict[str, Any]]:
+        schema = "public" if self.engine.dialect.name == "postgresql" else None
+        inspector = inspect(self.engine)
+        run_columns = {
+            column["name"]
+            for column in inspector.get_columns("simulation_runs", schema=schema)
+        }
+        table_prefix = "public." if self.engine.dialect.name == "postgresql" else ""
+        with self.engine.connect() as connection:
+            schedule_rows = [
+                dict(row)
+                for row in connection.execute(
+                    text(f"select * from {table_prefix}matches")
+                ).mappings()
+            ]
+            available_keys: set[str] = set()
+            if "snapshot_key" in run_columns:
+                status_filter = (
+                    "and coalesce(sr.status, 'completed') = 'completed'"
+                    if "status" in run_columns else ""
+                )
+                available_keys = {
+                    str(value)
+                    for value in connection.execute(
+                        text(
+                            f"""
+                            select distinct sr.snapshot_key
+                            from {table_prefix}simulation_runs sr
+                            where sr.snapshot_key is not null
+                              {status_filter}
+                              and exists (
+                                select 1
+                                from {table_prefix}team_simulation_results tsr
+                                where tsr.simulation_run_id = sr.id
+                              )
+                            """
+                        )
+                    ).scalars()
+                }
+        payload = []
+        for snapshot in SNAPSHOTS:
+            cutoff_at, cutoff_source = resolve_snapshot_cutoff(
+                snapshot, schedule_rows
+            )
+            payload.append(
+                snapshot_payload(
+                    snapshot,
+                    cutoff_at,
+                    cutoff_source=cutoff_source,
+                    available=snapshot.key in available_keys,
+                )
+            )
+        return payload
 
     def _load_model_inputs(self) -> dict[str, dict[str, Any]]:
         try:
@@ -1160,6 +1284,121 @@ class PredictionService:
             ],
         }
 
+    def simulation_snapshots(self) -> list[dict[str, Any]]:
+        if self.simulation_source is not None and hasattr(
+            self.simulation_source, "list_snapshots"
+        ):
+            return self.simulation_source.list_snapshots()
+        return [
+            snapshot_payload(
+                snapshot,
+                snapshot.fallback_cutoff_at,
+                cutoff_source="audited_fallback",
+                available=False,
+            )
+            for snapshot in SNAPSHOTS
+        ]
+
+    def snapshot_simulation(self, snapshot_key: str) -> dict[str, Any] | None:
+        snapshot = get_snapshot(snapshot_key)
+        if self.simulation_source is None or not hasattr(
+            self.simulation_source, "load_snapshot"
+        ):
+            return None
+        database_simulation = self.simulation_source.load_snapshot(snapshot_key)
+        if database_simulation is None:
+            return None
+        payload = self._database_simulation_payload(database_simulation)
+        run = database_simulation["run"]
+        cutoff = parse_utc(run.get("cutoff_at")) or snapshot.fallback_cutoff_at
+        payload["snapshot"] = snapshot_payload(
+            snapshot,
+            cutoff,
+        )
+        payload["reconstruction_mode"] = (
+            run.get("reconstruction_mode") or "retrospective_reconstruction"
+        )
+        payload["provenance"] = _json_value(run.get("provenance"), {})
+        payload["source"] = "database_snapshot"
+        return payload
+
+    def _database_simulation_payload(
+        self, database_simulation: dict[str, Any]
+    ) -> dict[str, Any]:
+        run = database_simulation["run"]
+        model_inputs = database_simulation.get("model_inputs", {})
+        generated_at = run.get("generated_at") or run.get("created_at")
+        iterations = int(run.get("num_simulations") or run.get("iterations") or 0)
+        teams = []
+        for row in database_simulation["results"]:
+            team_id = str(row["team_id"])
+            team = self.teams_by_id.get(team_id)
+            if team is None:
+                LOGGER.warning(
+                    "Skipping simulation result for unknown team %s", team_id
+                )
+                continue
+            teams.append(
+                {
+                    "team_id": team_id,
+                    "team_name": team.name,
+                    "flag": flag_for_team(team_id),
+                    "group": team.group,
+                    "group_stage_exit": float(
+                        row.get("group_stage_exit_probability")
+                        or row.get("group_stage_exit")
+                        or 0
+                    ),
+                    "round_of_32": float(
+                        row.get("round_of_32_probability")
+                        or row.get("round_of_32")
+                        or 0
+                    ),
+                    "round_of_16": float(
+                        row.get("round_of_16_probability")
+                        or row.get("round_of_16")
+                        or 0
+                    ),
+                    "quarterfinal": float(
+                        row.get("quarterfinal_probability")
+                        or row.get("quarterfinal")
+                        or 0
+                    ),
+                    "semifinal": float(
+                        row.get("semifinal_probability")
+                        or row.get("semifinal")
+                        or 0
+                    ),
+                    "final": float(
+                        row.get("final_probability") or row.get("final") or 0
+                    ),
+                    "champion": float(
+                        row.get("champion_probability") or row.get("champion") or 0
+                    ),
+                    "model_inputs": model_inputs.get(team_id),
+                }
+            )
+        return {
+            "iterations": iterations,
+            "seed": int(run.get("random_seed") or run.get("seed") or 2026),
+            "model_version": run.get("model_version") or "unknown",
+            "generated_at": str(generated_at),
+            "created_at": str(run.get("created_at") or generated_at),
+            "data_cutoff": str(
+                run.get("cutoff_at") or run.get("data_cutoff") or generated_at
+            ),
+            "source": "database_latest",
+            "monte_carlo_precision": {
+                "worst_case_standard_error": (
+                    (0.25 / iterations) ** 0.5 if iterations else 0.0
+                ),
+                "worst_case_95_margin": (
+                    1.96 * (0.25 / iterations) ** 0.5 if iterations else 0.0
+                ),
+            },
+            "teams": teams,
+        }
+
     def latest_simulation(self) -> dict:
         if self.simulation_source is not None:
             try:
@@ -1172,86 +1411,7 @@ class PredictionService:
                 )
             else:
                 if database_simulation is not None:
-                    run = database_simulation["run"]
-                    model_inputs = database_simulation.get("model_inputs", {})
-                    generated_at = run.get("generated_at") or run.get("created_at")
-                    iterations = int(
-                        run.get("num_simulations") or run.get("iterations") or 0
-                    )
-                    teams = []
-                    for row in database_simulation["results"]:
-                        team_id = str(row["team_id"])
-                        team = self.teams_by_id.get(team_id)
-                        if team is None:
-                            LOGGER.warning(
-                                "Skipping simulation result for unknown team %s",
-                                team_id,
-                            )
-                            continue
-                        teams.append(
-                            {
-                                "team_id": team_id,
-                                "team_name": team.name,
-                                "flag": flag_for_team(team_id),
-                                "group": team.group,
-                                "group_stage_exit": float(
-                                    row.get("group_stage_exit_probability")
-                                    or row.get("group_stage_exit")
-                                    or 0
-                                ),
-                                "round_of_32": float(
-                                    row.get("round_of_32_probability")
-                                    or row.get("round_of_32")
-                                    or 0
-                                ),
-                                "round_of_16": float(
-                                    row.get("round_of_16_probability")
-                                    or row.get("round_of_16")
-                                    or 0
-                                ),
-                                "quarterfinal": float(
-                                    row.get("quarterfinal_probability")
-                                    or row.get("quarterfinal")
-                                    or 0
-                                ),
-                                "semifinal": float(
-                                    row.get("semifinal_probability")
-                                    or row.get("semifinal")
-                                    or 0
-                                ),
-                                "final": float(
-                                    row.get("final_probability")
-                                    or row.get("final")
-                                    or 0
-                                ),
-                                "champion": float(
-                                    row.get("champion_probability")
-                                    or row.get("champion")
-                                    or 0
-                                ),
-                                "model_inputs": model_inputs.get(team_id),
-                            }
-                        )
-                    return {
-                        "iterations": iterations,
-                        "seed": int(run.get("random_seed") or run.get("seed") or 2026),
-                        "model_version": run.get("model_version") or "unknown",
-                        "generated_at": str(generated_at),
-                        "created_at": str(run.get("created_at") or generated_at),
-                        "data_cutoff": str(run.get("data_cutoff") or generated_at),
-                        "source": "database_latest",
-                        "monte_carlo_precision": {
-                            "worst_case_standard_error": (
-                                (0.25 / iterations) ** 0.5 if iterations else 0.0
-                            ),
-                            "worst_case_95_margin": (
-                                1.96 * (0.25 / iterations) ** 0.5
-                                if iterations
-                                else 0.0
-                            ),
-                        },
-                        "teams": teams,
-                    }
+                    return self._database_simulation_payload(database_simulation)
 
         if self._simulation is None:
             snapshot_path = ROOT / "data" / "generated" / "latest.json"

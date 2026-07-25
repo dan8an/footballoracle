@@ -133,10 +133,64 @@ class LatestV4SimulationSource:
         }
 
 
+class HistoricalSimulationSource(LatestV4SimulationSource):
+    def list_snapshots(self):
+        keys = [
+            ("pre_tournament", "Before Tournament", 1, True),
+            ("pre_round_of_32", "Before Round of 32", 2, False),
+            ("pre_round_of_16", "Before Round of 16", 3, True),
+            ("pre_quarterfinals", "Before Quarterfinals", 4, False),
+            ("pre_semifinals", "Before Semifinals", 5, False),
+            ("pre_final", "Before Final", 6, True),
+        ]
+        return [
+            {
+                "key": key,
+                "label": label,
+                "stage": "group" if order == 1 else key.removeprefix("pre_"),
+                "cutoff_at": f"2026-07-{order:02d}T00:00:00+00:00",
+                "sort_order": order,
+                "description": label,
+                "available": available,
+            }
+            for key, label, order, available in keys
+        ]
+
+    def load_snapshot(self, snapshot_key):
+        if snapshot_key not in {"pre_tournament", "pre_round_of_16", "pre_final"}:
+            return None
+        payload = self.load_latest()
+        champion = {
+            "pre_tournament": 0.22,
+            "pre_round_of_16": 0.31,
+            "pre_final": 0.5,
+        }[snapshot_key]
+        payload["run"] = {
+            **payload["run"],
+            "id": f"run-{snapshot_key}",
+            "snapshot_key": snapshot_key,
+            "cutoff_at": "2026-07-04T17:00:00+00:00",
+            "reconstruction_mode": "retrospective_reconstruction",
+            "provenance": {"eligible_prediction_count": 8},
+        }
+        payload["results"][0]["champion_probability"] = champion
+        return payload
+
+
 def use_v4_simulation_service(monkeypatch):
     service = PredictionService(
         prediction_source=LatestV4PredictionSource(),
         simulation_source=LatestV4SimulationSource(),
+        prediction_cache_seconds=0,
+    )
+    monkeypatch.setattr(main_module, "service", service)
+    return service
+
+
+def use_historical_simulation_service(monkeypatch):
+    service = PredictionService(
+        prediction_source=LatestV4PredictionSource(),
+        simulation_source=HistoricalSimulationSource(),
         prediction_cache_seconds=0,
     )
     monkeypatch.setattr(main_module, "service", service)
@@ -938,6 +992,53 @@ def test_latest_database_simulation_wins_over_static(monkeypatch):
         }
 
 
+def test_snapshot_catalog_is_ordered_and_marks_availability(monkeypatch):
+    use_historical_simulation_service(monkeypatch)
+
+    response = client.get("/v1/simulations/snapshots")
+    payload = response.json()
+
+    assert response.status_code == 200
+    assert [row["key"] for row in payload] == [
+        "pre_tournament",
+        "pre_round_of_32",
+        "pre_round_of_16",
+        "pre_quarterfinals",
+        "pre_semifinals",
+        "pre_final",
+    ]
+    assert payload[0]["available"] is True
+    assert payload[1]["available"] is False
+
+
+def test_snapshot_retrieval_serializes_metadata_without_cross_selection(monkeypatch):
+    use_historical_simulation_service(monkeypatch)
+
+    early = client.get("/v1/simulations?snapshot=pre_tournament")
+    final = client.get("/v1/simulations?snapshot=pre_final")
+
+    assert early.status_code == 200
+    assert early.json()["snapshot"]["key"] == "pre_tournament"
+    assert early.json()["source"] == "database_snapshot"
+    assert early.json()["model_version"] == "elo-context-v4.1"
+    assert early.json()["iterations"] == 50000
+    assert early.json()["reconstruction_mode"] == "retrospective_reconstruction"
+    assert early.json()["teams"][0]["champion"] == 0.22
+    assert final.json()["snapshot"]["key"] == "pre_final"
+    assert final.json()["teams"][0]["champion"] == 0.5
+
+
+def test_invalid_and_unavailable_snapshot_responses(monkeypatch):
+    use_historical_simulation_service(monkeypatch)
+
+    invalid = client.get("/v1/simulations?snapshot=not-a-snapshot")
+    unavailable = client.get("/v1/simulations?snapshot=pre_round_of_32")
+
+    assert invalid.status_code == 422
+    assert unavailable.status_code == 404
+    assert unavailable.json()["detail"]["code"] == "snapshot_unavailable"
+
+
 def test_database_simulation_failure_uses_labeled_static_fallback():
     class FailingSimulationSource:
         def load_latest(self):
@@ -955,6 +1056,61 @@ def test_database_simulation_failure_uses_labeled_static_fallback():
     assert payload["model_version"] == "context-0.2.0"
     assert payload["created_at"] == payload["generated_at"]
     assert len(payload["teams"]) == 48
+
+
+def test_latest_simulation_does_not_select_historical_snapshot():
+    engine = create_engine("sqlite://")
+    with engine.begin() as connection:
+        connection.execute(
+            text(
+                """
+                create table simulation_runs (
+                  id text primary key,
+                  model_version text,
+                  num_simulations integer,
+                  random_seed integer,
+                  snapshot_key text,
+                  created_at text
+                )
+                """
+            )
+        )
+        connection.execute(
+            text(
+                """
+                create table team_simulation_results (
+                  simulation_run_id text,
+                  team_id text,
+                  champion_probability real
+                )
+                """
+            )
+        )
+        connection.execute(
+            text(
+                """
+                insert into simulation_runs values
+                  ('current', 'elo-context-v4.2.1', 50000, 2026, null,
+                   '2026-07-20T00:00:00Z'),
+                  ('snapshot', 'elo-context-v4.2.1', 50000, 2026,
+                   'pre_tournament', '2026-07-21T00:00:00Z')
+                """
+            )
+        )
+        connection.execute(
+            text(
+                """
+                insert into team_simulation_results values
+                  ('current', 'ESP', 1.0),
+                  ('snapshot', 'ESP', 0.18)
+                """
+            )
+        )
+
+    latest = DatabaseSimulationSource(engine).load_latest()
+
+    assert latest["run"]["id"] == "current"
+    assert latest["results"][0]["champion_probability"] == 1.0
 
 
 def test_api_matches_use_v4_probabilities_and_canonical_fixture(monkeypatch):

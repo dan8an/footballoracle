@@ -25,14 +25,22 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from modeling.src.data import build_fixtures, load_teams, validate_tournament
+from modeling.src.historical_snapshots import (
+    SNAPSHOTS,
+    get_snapshot,
+    resolve_snapshot_cutoff,
+)
 from scripts.database import create_database_engine
 from scripts.generate_predictions import (
+    MODEL_VERSION,
     PredictionRepository,
     calculate_prediction,
+    canonical_prior_elo,
 )
 
 DEFAULT_SIMULATIONS = 50_000
 DEFAULT_SEED = 2026
+SIMULATION_CONFIG_VERSION = "historical-snapshot-v1"
 STAGES = (
     "group_stage_exit",
     "round_of_32",
@@ -108,6 +116,22 @@ def parse_args() -> argparse.Namespace:
         type=int,
         default=DEFAULT_SEED,
         help=f"Deterministic random seed (default: {DEFAULT_SEED}).",
+    )
+    selection = parser.add_mutually_exclusive_group()
+    selection.add_argument(
+        "--snapshot",
+        choices=[snapshot.key for snapshot in SNAPSHOTS],
+        help="Generate one cutoff-conditioned historical snapshot.",
+    )
+    selection.add_argument(
+        "--all-snapshots",
+        action="store_true",
+        help="Generate all canonical historical snapshots in chronological order.",
+    )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Audit cutoff and input coverage without simulating or writing.",
     )
     return parser.parse_args()
 
@@ -796,9 +820,61 @@ class SimulationRepository:
                 "supabase/migrations/202606100005_tournament_simulation.sql first."
             )
 
+    def assert_snapshot_schema(self) -> None:
+        columns = {
+            column["name"]
+            for column in inspect(self.engine).get_columns(
+                "simulation_runs", schema=self.schema
+            )
+        }
+        required = {
+            "snapshot_key",
+            "cutoff_at",
+            "reconstruction_mode",
+            "simulation_config_version",
+            "status",
+            "provenance",
+        }
+        if missing := required - columns:
+            raise RuntimeError(
+                "Historical snapshot columns are missing: "
+                f"{sorted(missing)}. Apply "
+                "supabase/migrations/202607250001_historical_simulation_snapshots.sql."
+            )
+
+    def load_schedule_rows(self) -> list[dict[str, Any]]:
+        matches = self._table("matches")
+        with self.engine.connect() as connection:
+            rows = [dict(row) for row in connection.execute(select(matches)).mappings()]
+        official = []
+        for row in rows:
+            stage = _stage_from_value(row.get("stage") or row.get("tournament_stage"))
+            kickoff = _parse_timestamp(row.get("kickoff") or row.get("match_date"))
+            if kickoff is None:
+                continue
+            if stage == "group":
+                if not (GROUP_WINDOW_START <= kickoff < GROUP_WINDOW_END):
+                    continue
+                if _official_group_id(row) is None and not _is_world_cup_2026_provider_row(row):
+                    continue
+            elif stage in KNOCKOUT_STAGES:
+                if not (KNOCKOUT_WINDOW_START <= kickoff < KNOCKOUT_WINDOW_END):
+                    continue
+                if (
+                    _official_match_number(row, stage) is None
+                    and not _is_world_cup_2026_provider_row(row)
+                ):
+                    continue
+            else:
+                continue
+            official.append(row)
+        return official
+
     def load_match_states(
         self,
         database_team_ids: dict[str, Any],
+        cutoff_at: datetime | None = None,
+        snapshot_stage: str | None = None,
     ) -> list[MatchState]:
         matches = self._table("matches")
         database_to_canonical_team = {
@@ -826,10 +902,21 @@ class SimulationRepository:
             fixtures_by_number,
             fixtures_by_key,
             fixture_ids,
+            cutoff_at,
         )
-        states.extend(
-            self._official_knockout_states(rows, database_to_canonical_team)
-        )
+        if snapshot_stage != "group":
+            stage_limit = (
+                KNOCKOUT_STAGES.index(snapshot_stage)
+                if snapshot_stage in KNOCKOUT_STAGES
+                else len(KNOCKOUT_STAGES) - 1
+            )
+            states.extend(
+                match
+                for match in self._official_knockout_states(
+                    rows, database_to_canonical_team, cutoff_at
+                )
+                if KNOCKOUT_STAGES.index(match.stage) <= stage_limit
+            )
         completed_groups = sum(
             1 for match in states if match.stage == "group" and match.completed
         )
@@ -856,6 +943,7 @@ class SimulationRepository:
         fixtures_by_number: dict[int, Any],
         fixtures_by_key: dict[tuple[datetime, str, str], Any],
         fixture_ids: set[str],
+        cutoff_at: datetime | None,
     ) -> list[MatchState]:
         selected: dict[str, tuple[dict[str, Any], Any]] = {}
         selected_numbers: dict[str, int | None] = {}
@@ -916,6 +1004,7 @@ class SimulationRepository:
                     fixture.away_team_id,
                     fixture.number,
                     fixture.kickoff,
+                    cutoff_at,
                 )
             )
         self._log_exclusions("group", excluded)
@@ -925,6 +1014,7 @@ class SimulationRepository:
         self,
         rows: list[dict[str, Any]],
         database_to_canonical_team: dict[str, str],
+        cutoff_at: datetime | None,
     ) -> list[MatchState]:
         selected: dict[tuple[Any, ...], dict[str, Any]] = {}
         selected_numbers: dict[tuple[Any, ...], int | None] = {}
@@ -1011,6 +1101,7 @@ class SimulationRepository:
                         away_id,
                         number,
                         kickoff,
+                        cutoff_at,
                     )
                 )
         self._log_exclusions("knockout", excluded)
@@ -1025,6 +1116,7 @@ class SimulationRepository:
         away_id: str,
         match_number: int | None,
         kickoff: datetime | None,
+        cutoff_at: datetime | None = None,
     ) -> MatchState:
         home_penalty_score, away_penalty_score = _penalty_scores(row)
         return MatchState(
@@ -1032,7 +1124,13 @@ class SimulationRepository:
             stage=stage,
             home_team_id=home_id,
             away_team_id=away_id,
-            completed=_is_completed_match(row),
+            completed=(
+                _is_completed_match(row)
+                and (
+                    cutoff_at is None
+                    or (kickoff is not None and kickoff < cutoff_at)
+                )
+            ),
             home_score=_integer(row.get("home_score")),
             away_score=_integer(row.get("away_score")),
             home_penalty_score=home_penalty_score,
@@ -1087,6 +1185,193 @@ class SimulationRepository:
             canonical,
         )
 
+    def load_historical_predictions(
+        self,
+        cutoff_at: datetime,
+        match_states: list[MatchState],
+        model_version: str = MODEL_VERSION,
+    ) -> tuple[dict[str, dict[str, Any]], dict[str, Any]]:
+        """Select the newest authentic prediction strictly before cutoff/kickoff."""
+        predictions = self._table("predictions")
+        model_runs = self._table("model_runs")
+        with self.engine.connect() as connection:
+            rows = [dict(row) for row in connection.execute(select(predictions)).mappings()]
+            run_rows = [
+                dict(row)
+                for row in connection.execute(select(model_runs)).mappings()
+            ]
+        run_by_id = {
+            str(row["id"]): row for row in run_rows if row.get("id") is not None
+        }
+
+        fixture_kickoffs = {
+            fixture.id: fixture.kickoff for fixture in build_fixtures()
+        }
+        state_by_identity: dict[str, MatchState] = {}
+        for state in match_states:
+            for identity in (state.id, state.match_number):
+                if identity is not None:
+                    state_by_identity[str(identity)] = state
+            if state.match_number is not None:
+                state_by_identity[f"WC26-{state.match_number:03d}"] = state
+
+        eligible: dict[str, tuple[datetime, dict[str, Any]]] = {}
+        rejected_after_cutoff: list[str] = []
+        rejected_after_kickoff: list[str] = []
+        for row in rows:
+            run = run_by_id.get(str(row.get("model_run_id")))
+            if (
+                run is not None
+                and "status" in run
+                and str(run.get("status") or "completed") != "completed"
+            ):
+                continue
+            effective_model_version = row.get("model_version") or (
+                run.get("model_version") if run is not None else None
+            )
+            if str(effective_model_version or "") != model_version:
+                continue
+            if str(row.get("generation_mode") or "standard") == "historical_backfill":
+                # Backfills are useful provenance, but they were not generated at
+                # the historical instant. Snapshot fallback rebuilds their inputs
+                # explicitly instead of pretending they were published earlier.
+                continue
+            generated_at = _parse_timestamp(
+                row.get("prediction_timestamp") or row.get("created_at")
+            )
+            if generated_at is None:
+                continue
+            identities = [
+                str(value)
+                for value in (
+                    row.get("canonical_match_id"),
+                    row.get("match_id"),
+                    row.get("provider_fixture_id"),
+                )
+                if value is not None
+            ]
+            canonical_id = next(
+                (identity for identity in identities if identity in fixture_kickoffs),
+                None,
+            )
+            state = next(
+                (state_by_identity[identity] for identity in identities if identity in state_by_identity),
+                None,
+            )
+            kickoff = (
+                state.kickoff
+                if state is not None and state.kickoff is not None
+                else fixture_kickoffs.get(canonical_id)
+                if canonical_id is not None
+                else None
+            )
+            if generated_at >= cutoff_at:
+                rejected_after_cutoff.extend(identities[:1])
+                continue
+            if kickoff is not None and generated_at >= kickoff:
+                rejected_after_kickoff.extend(identities[:1])
+                continue
+            logical_id = canonical_id or (state.id if state is not None else None)
+            if logical_id is None:
+                continue
+            current = eligible.get(logical_id)
+            if current is None or generated_at > current[0]:
+                eligible[logical_id] = (generated_at, row)
+
+        selected = {match_id: row for match_id, (_timestamp, row) in eligible.items()}
+        return selected, {
+            "eligible_prediction_count": len(selected),
+            "prediction_model_version": model_version,
+            "latest_eligible_prediction_at": (
+                max(timestamp for timestamp, _row in eligible.values()).isoformat()
+                if eligible else None
+            ),
+            "rejected_after_cutoff": sorted(set(rejected_after_cutoff)),
+            "rejected_at_or_after_kickoff": sorted(set(rejected_after_kickoff)),
+            "model_run_ids": sorted(
+                {
+                    str(row["model_run_id"])
+                    for row in selected.values()
+                    if row.get("model_run_id") is not None
+                }
+            ),
+        }
+
+    def load_historical_prediction_provider(
+        self,
+        cutoff_at: datetime,
+        database_team_ids: dict[str, Any],
+    ) -> tuple[KnockoutPrediction, dict[str, Any]]:
+        """Build leakage-safe matchup probabilities from raw rows before cutoff.
+
+        The mutable current rating tables are intentionally not queried. When
+        timestamped raw stats are unavailable (notably in small local fixtures),
+        the production model's canonical rank prior is the deterministic fallback.
+        """
+        teams = load_teams()
+        team_ratings = {
+            team.id: {
+                "team_id": team.id,
+                "elo_rating": canonical_prior_elo(team.rank),
+                "attack_rating": 50.0,
+                "defense_rating": 50.0,
+                "form_rating": 50.0,
+                "matches_played": 0,
+                "_rating_source": "canonical_rank_prior",
+            }
+            for team in teams
+        }
+        shot_volume: dict[str, float] = {}
+        provenance: dict[str, Any] = {
+            "historical_rating_source": "canonical_rank_prior",
+            "historical_team_stat_count": 0,
+            "historical_player_stat_count": 0,
+            "historical_completed_match_count": 0,
+            "maximum_source_timestamp": None,
+        }
+        existing = set(inspect(self.engine).get_table_names(schema=self.schema))
+        required = {
+            "teams",
+            "matches",
+            "team_match_stats",
+            "player_match_stats",
+        }
+        if required.issubset(existing):
+            from scripts.backfill_historical_knockout_predictions import (
+                HistoricalBackfillRepository,
+                build_historical_state,
+            )
+
+            historical_repository = HistoricalBackfillRepository(self.engine)
+            teams_rows = historical_repository.rows("teams")
+            state = build_historical_state(
+                teams=teams_rows,
+                matches=historical_repository.rows("matches"),
+                team_stats=historical_repository.load_stats("team_match_stats"),
+                player_stats=historical_repository.load_stats("player_match_stats"),
+                cutoff=cutoff_at,
+                target_match_id="__historical_snapshot__",
+            )
+            for canonical_id, database_id in database_team_ids.items():
+                if database_id in state.team_ratings:
+                    team_ratings[canonical_id] = {
+                        **state.team_ratings[database_id],
+                        "team_id": canonical_id,
+                    }
+                if database_id in state.shot_volume_ratings:
+                    shot_volume[canonical_id] = state.shot_volume_ratings[database_id]
+            provenance = {
+                "historical_rating_source": "raw_stats_cutoff_rebuild",
+                "historical_team_stat_count": state.team_stat_count,
+                "historical_player_stat_count": state.player_stat_count,
+                "historical_completed_match_count": state.completed_match_count,
+                "maximum_source_timestamp": (
+                    state.maximum_source_timestamp.isoformat()
+                    if state.maximum_source_timestamp is not None else None
+                ),
+            }
+        return build_knockout_prediction_provider(team_ratings, shot_volume), provenance
+
     def store_results(
         self,
         model_run_id: Any,
@@ -1094,6 +1379,11 @@ class SimulationRepository:
         num_simulations: int,
         seed: int,
         results: list[dict[str, Any]],
+        *,
+        snapshot_key: str | None = None,
+        cutoff_at: datetime | None = None,
+        reconstruction_mode: str | None = None,
+        provenance: dict[str, Any] | None = None,
     ) -> Any:
         runs = self._table("simulation_runs")
         result_table = self._table("team_simulation_results")
@@ -1108,6 +1398,14 @@ class SimulationRepository:
                 "num_simulations": num_simulations,
                 "iterations": num_simulations,
                 "random_seed": seed,
+                "snapshot_key": snapshot_key,
+                "cutoff_at": cutoff_at.isoformat() if cutoff_at else None,
+                "reconstruction_mode": reconstruction_mode,
+                "simulation_config_version": (
+                    SIMULATION_CONFIG_VERSION if snapshot_key else None
+                ),
+                "status": "completed",
+                "provenance": provenance or {},
                 "created_at": now,
             },
         )
@@ -1116,6 +1414,24 @@ class SimulationRepository:
                 connection.execute(
                     text("select pg_advisory_xact_lock(hashtext('tournament-simulation'))")
                 )
+            if snapshot_key and "snapshot_key" in runs.c:
+                existing_ids = list(
+                    connection.execute(
+                        select(runs.c.id).where(
+                            runs.c.snapshot_key == snapshot_key,
+                            runs.c.model_version == model_version,
+                            runs.c.simulation_config_version
+                            == SIMULATION_CONFIG_VERSION,
+                        )
+                    ).scalars()
+                )
+                if existing_ids:
+                    connection.execute(
+                        result_table.delete().where(
+                            result_table.c.simulation_run_id.in_(existing_ids)
+                        )
+                    )
+                    connection.execute(runs.delete().where(runs.c.id.in_(existing_ids)))
             connection.execute(runs.insert().values(**run_values))
             connection.execute(
                 result_table.insert(),
@@ -1145,12 +1461,214 @@ class SimulationRepository:
         return compatible
 
 
+def run_historical_snapshot(
+    repository: SimulationRepository,
+    prediction_repository: PredictionRepository,
+    snapshot_key: str,
+    *,
+    num_simulations: int,
+    seed: int,
+    dry_run: bool,
+    logger: logging.Logger,
+) -> Any | None:
+    snapshot = get_snapshot(snapshot_key)
+    cutoff_at, cutoff_source = resolve_snapshot_cutoff(
+        snapshot, repository.load_schedule_rows()
+    )
+    database_team_ids = prediction_repository.load_database_team_ids()
+    match_states = repository.load_match_states(
+        database_team_ids,
+        cutoff_at=cutoff_at,
+        snapshot_stage=snapshot.stage,
+    )
+    if snapshot.stage in KNOCKOUT_STAGE_LIMITS:
+        current_stage = [
+            match for match in match_states if match.stage == snapshot.stage
+        ]
+        expected = KNOCKOUT_STAGE_LIMITS[snapshot.stage]
+        if len(current_stage) != expected:
+            raise ValueError(
+                f"Snapshot {snapshot.key} requires {expected} official "
+                f"{snapshot.stage} fixtures with known participants; found "
+                f"{len(current_stage)}. Refusing to infer them from final rows "
+                "or an incomplete bracket."
+            )
+
+    predictions, prediction_audit = repository.load_historical_predictions(
+        cutoff_at, match_states, MODEL_VERSION
+    )
+    historical_provider, rating_audit = repository.load_historical_prediction_provider(
+        cutoff_at, database_team_ids
+    )
+    fixtures_by_id = {fixture.id: fixture for fixture in build_fixtures()}
+    unresolved = [
+        match for match in match_states
+        if not match.completed
+        and (
+            match.stage == "group"
+            or match.stage == snapshot.stage
+        )
+    ]
+    if snapshot.stage == "group":
+        present_group_ids = {match.id for match in unresolved if match.stage == "group"}
+        unresolved.extend(
+            MatchState(
+                id=fixture.id,
+                stage="group",
+                home_team_id=fixture.home_team_id,
+                away_team_id=fixture.away_team_id,
+                completed=False,
+                match_number=fixture.number,
+                kickoff=fixture.kickoff,
+            )
+            for fixture in fixtures_by_id.values()
+            if fixture.id not in present_group_ids
+        )
+    fallback_matches = []
+    for match in unresolved:
+        if match.id in predictions:
+            continue
+        predictions[match.id] = historical_provider(
+            match.home_team_id, match.away_team_id
+        )
+        fallback_matches.append(match.id)
+
+    future_dynamic_rounds = snapshot.stage != "final"
+    reconstruction_mode = (
+        "retrospective_reconstruction"
+        if fallback_matches or future_dynamic_rounds
+        else "historical_prediction_snapshot"
+    )
+    completed_groups = sum(
+        1 for match in match_states if match.stage == "group" and match.completed
+    )
+    completed_knockouts = sum(
+        1 for match in match_states
+        if match.stage in KNOCKOUT_STAGES and match.completed
+    )
+    provenance = {
+        "snapshot_key": snapshot.key,
+        "snapshot_stage": snapshot.stage,
+        "cutoff_source": cutoff_source,
+        "completed_group_matches": completed_groups,
+        "completed_knockout_matches": completed_knockouts,
+        "unresolved_stored_fixture_count": len(unresolved),
+        "retrospective_prediction_match_ids": sorted(fallback_matches),
+        "future_dynamic_matchups_reconstructed": future_dynamic_rounds,
+        **prediction_audit,
+        **rating_audit,
+    }
+    logger.info(
+        "[simulation] SNAPSHOT key=%s cutoff=%s cutoff_source=%s model=%s "
+        "mode=%s completed_group=%d completed_knockout=%d "
+        "eligible_predictions=%d retrospective_predictions=%d",
+        snapshot.key,
+        cutoff_at.isoformat(),
+        cutoff_source,
+        MODEL_VERSION,
+        reconstruction_mode,
+        completed_groups,
+        completed_knockouts,
+        prediction_audit["eligible_prediction_count"],
+        len(fallback_matches),
+    )
+    if dry_run:
+        logger.info(
+            "[simulation] DRY RUN: no simulation executed and no rows written; "
+            "retrospective_match_ids=%s",
+            ", ".join(sorted(fallback_matches)) or "none",
+        )
+        return None
+
+    results = simulate_tournaments(
+        predictions,
+        num_simulations,
+        seed,
+        historical_provider,
+        match_states,
+    )
+    return repository.store_results(
+        None,
+        MODEL_VERSION,
+        num_simulations,
+        seed,
+        results,
+        snapshot_key=snapshot.key,
+        cutoff_at=cutoff_at,
+        reconstruction_mode=reconstruction_mode,
+        provenance=provenance,
+    )
+
+
+def _run_current_simulation(
+    repository: SimulationRepository,
+    prediction_repository: PredictionRepository,
+    *,
+    num_simulations: int,
+    seed: int,
+    logger: logging.Logger,
+) -> Any | None:
+    latest = repository.load_latest_predictions()
+    if latest is None:
+        logger.info("[simulation] SUCCESS: no prediction run available")
+        return None
+    model_run_id, model_version, predictions = latest
+    database_team_ids = prediction_repository.load_database_team_ids()
+    match_states = repository.load_match_states(database_team_ids)
+    completed_groups = sum(
+        1 for match in match_states if match.stage == "group" and match.completed
+    )
+    completed_knockouts = sum(
+        1 for match in match_states if match.stage in KNOCKOUT_STAGES and match.completed
+    )
+    upcoming_knockouts = sum(
+        1 for match in match_states if match.stage in KNOCKOUT_STAGES and not match.completed
+    )
+    logger.info(
+        "[simulation] Loaded tournament state: completed_group=%d "
+        "completed_knockout=%d upcoming_knockout=%d",
+        completed_groups,
+        completed_knockouts,
+        upcoming_knockouts,
+    )
+    team_ratings = prediction_repository.load_current_team_ratings(
+        database_team_ids
+    )
+    shot_volume_ratings = (
+        prediction_repository.load_current_shot_volume_ratings(
+            database_team_ids
+        )
+    )
+    knockout_prediction = build_knockout_prediction_provider(
+        team_ratings,
+        shot_volume_ratings,
+    )
+    logger.info("[simulation] Running %d tournaments", num_simulations)
+    results = simulate_tournaments(
+        predictions,
+        num_simulations,
+        seed,
+        knockout_prediction,
+        match_states,
+    )
+    return repository.store_results(
+        model_run_id,
+        model_version,
+        num_simulations,
+        seed,
+        results,
+    )
+
+
 def main() -> int:
     args = parse_args()
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
     logger = logging.getLogger("run_simulations")
     if args.simulations < 1:
         logger.error("--simulations must be at least 1")
+        return 2
+    if args.dry_run and not (args.snapshot or args.all_snapshots):
+        logger.error("--dry-run requires --snapshot or --all-snapshots")
         return 2
 
     database_url = load_environment().get("DATABASE_URL")
@@ -1168,59 +1686,37 @@ def main() -> int:
         logger.info("[simulation] START")
         repository = SimulationRepository(engine)
         repository.assert_schema()
-        latest = repository.load_latest_predictions()
-        if latest is None:
-            logger.info("[simulation] SUCCESS: no prediction run available")
-            return 0
-        model_run_id, model_version, predictions = latest
         prediction_repository = PredictionRepository(engine)
-        database_team_ids = prediction_repository.load_database_team_ids()
-        match_states = repository.load_match_states(database_team_ids)
-        completed_groups = sum(
-            1 for match in match_states if match.stage == "group" and match.completed
-        )
-        completed_knockouts = sum(
-            1 for match in match_states if match.stage in KNOCKOUT_STAGES and match.completed
-        )
-        upcoming_knockouts = sum(
-            1 for match in match_states if match.stage in KNOCKOUT_STAGES and not match.completed
-        )
-        logger.info(
-            "[simulation] Loaded tournament state: completed_group=%d "
-            "completed_knockout=%d upcoming_knockout=%d",
-            completed_groups,
-            completed_knockouts,
-            upcoming_knockouts,
-        )
-        team_ratings = prediction_repository.load_current_team_ratings(
-            database_team_ids
-        )
-        shot_volume_ratings = (
-            prediction_repository.load_current_shot_volume_ratings(
-                database_team_ids
+        if args.snapshot or args.all_snapshots:
+            repository.assert_snapshot_schema()
+            keys = (
+                [snapshot.key for snapshot in SNAPSHOTS]
+                if args.all_snapshots
+                else [args.snapshot]
             )
+            for key in keys:
+                run_id = run_historical_snapshot(
+                    repository,
+                    prediction_repository,
+                    key,
+                    num_simulations=args.simulations,
+                    seed=args.seed,
+                    dry_run=args.dry_run,
+                    logger=logger,
+                )
+                if run_id is not None:
+                    logger.info("[simulation] SNAPSHOT SUCCESS key=%s run=%s", key, run_id)
+            logger.info("[simulation] SUCCESS snapshots=%s", ",".join(keys))
+            return 0
+        run_id = _run_current_simulation(
+            repository,
+            prediction_repository,
+            num_simulations=args.simulations,
+            seed=args.seed,
+            logger=logger,
         )
-        knockout_prediction = build_knockout_prediction_provider(
-            team_ratings,
-            shot_volume_ratings,
-        )
-        logger.info("[simulation] Running %d tournaments", args.simulations)
-        results = simulate_tournaments(
-            predictions,
-            args.simulations,
-            args.seed,
-            knockout_prediction,
-            match_states,
-        )
-        logger.info("[simulation] Updating team probabilities")
-        run_id = repository.store_results(
-            model_run_id,
-            model_version,
-            args.simulations,
-            args.seed,
-            results,
-        )
-        logger.info("[simulation] SUCCESS run=%s", run_id)
+        if run_id is not None:
+            logger.info("[simulation] SUCCESS run=%s", run_id)
         return 0
     except Exception:
         logger.exception("[simulation] FAILED: unexpected simulation error")

@@ -1,16 +1,16 @@
 {
   "artifact_type": "historical_readiness",
   "artifact_version": 1,
-  "evaluated_at": "2026-07-14T00:51:39.692895+00:00",
-  "candidate_model_version": "elo-context-v4.4-opponent-adjusted-xg-experimental",
+  "evaluated_at": "2026-07-14T01:14:52.147430+00:00",
+  "candidate_model_version": "elo-context-v4.4.1-home-xg-correction-experimental",
   "production_model_version": "elo-context-v4.2.1",
   "gate_specification_version": "historical-chronological-v1",
-  "plan_hash": "0c51da975adc50b648dd7187afa7ce5fa025d14fcb6f6cce1a0220ac99e75437",
+  "plan_hash": "38d562075e78ecf470a38fcb49b972441f3b39aca8eec869fcf13a828318215c",
   "code_commit_hash": "0e1669b4ef277c690001b32daae23c277f764880",
   "parameter_hashes": {
-    "candidate": "da072a17b4bdfdc93020b2ee03a405db3151ac259a67d0b5561b8f852b4db28f"
+    "candidate": "be9967db19ca01d9365e3264bb9c70c0bd884f9ae1347b3b2242e6a1cdb3be0d"
   },
-  "feature_definition_hash": "c9ec1ef55ba19bcefde69d39ff04945fc0ca09ca4507a4648099b3872dff40c5",
+  "feature_definition_hash": "4c571a9b841a2bf1bc5888305c4135ffddc52b559eb31c57e9aa23c14c28b529",
   "fold_definitions": [
     {
       "validation_year": 2022,
@@ -1316,34 +1316,40 @@
         "2022-12-18::ARG::FRA::FIFA World Cup"
       ],
       "fitted_parameters": {
-        "type": "ridge_poisson_glm",
-        "coefficients": [
-          0.14820848069776496,
-          0.49553819926414583,
-          0.25659113130529193,
-          0.16904034146270047,
-          0.0396644838325607,
-          0.14842435445953708,
-          0.23744068573313992,
-          -0.07324160555565581,
-          0.11215422472424849,
-          0.161919955091971,
-          -0.16497876840389467
-        ],
-        "feature_names": [
-          "intercept",
-          "elo_side_gap",
-          "long_attack",
-          "opponent_defense_weakness",
-          "short_attack",
-          "opponent_short_defense_weakness",
-          "home_non_neutral",
-          "qualification",
-          "nations_league",
-          "world_cup",
-          "other_competitive"
-        ],
-        "ridge": 1.0
+        "model_version": "elo-context-v4.4.1-home-xg-correction-experimental",
+        "architecture": "regularized_home_advantage",
+        "shared": {
+          "type": "ridge_poisson_glm",
+          "coefficients": [
+            0.15061429473593,
+            0.49622670409447844,
+            0.2567395329777172,
+            0.1690222386926596,
+            0.039699681656193316,
+            0.14884487762036352,
+            0.23094919667422567,
+            -0.07237220734298583,
+            0.11303660661611213,
+            0.16016595487959007,
+            -0.1655799405411689
+          ],
+          "feature_names": [
+            "intercept",
+            "elo_side_gap",
+            "long_attack",
+            "opponent_defense_weakness",
+            "short_attack",
+            "opponent_short_defense_weakness",
+            "home_non_neutral",
+            "qualification",
+            "nations_league",
+            "world_cup",
+            "other_competitive"
+          ],
+          "ridge": 8.0
+        },
+        "home": null,
+        "away": null
       },
       "current_metrics": {
         "matches": 155,
@@ -1493,23 +1499,23 @@
       },
       "candidate_metrics": {
         "matches": 155,
-        "multiclass_brier": 0.574569191871525,
-        "log_loss": 0.9729878204545996,
+        "multiclass_brier": 0.5748444766942574,
+        "log_loss": 0.9732994907434631,
         "accuracy": 0.5548387096774193,
-        "mean_home_xg": 1.3952811337261253,
+        "mean_home_xg": 1.393716568315518,
         "actual_home_goals": 1.5612903225806452,
-        "mean_away_xg": 1.144046856566328,
+        "mean_away_xg": 1.1463978047378958,
         "actual_away_goals": 0.9870967741935484,
-        "home_goal_mae": 1.0050766094258863,
-        "away_goal_mae": 0.8071296256287872,
-        "total_goal_error": -0.00905910648174002,
-        "goal_difference_error": -0.3229592712272995,
-        "poisson_deviance_per_team": 1.1540917570337754,
-        "mean_max_probability": 0.5162112451343799,
+        "home_goal_mae": 1.0050971159322881,
+        "away_goal_mae": 0.807840202500488,
+        "total_goal_error": -0.008272723720779585,
+        "goal_difference_error": -0.32687478480947463,
+        "poisson_deviance_per_team": 1.1544291595974912,
+        "mean_max_probability": 0.5161919232746714,
         "predicted_class_rates": {
-          "home": 0.42491329386124893,
-          "draw": 0.2574964468771996,
-          "away": 0.3175902592615515
+          "home": 0.4241743749827931,
+          "draw": 0.2574369084811704,
+          "away": 0.3183887165360365
         },
         "actual_class_rates": {
           "home": 0.5032258064516129,
@@ -1545,17 +1551,17 @@
         "xg_difference_distribution": {
           "below_0_10": 16,
           "below_0_25": 34,
-          "below_0_50": 68,
+          "below_0_50": 67,
           "above_0_75": 60,
           "above_1_00": 32
         },
         "goal_count_rates": {
           "predicted": {
-            "0": 0.30627294751272566,
-            "1": 0.3388741536255875,
-            "2": 0.20826123956206724,
-            "3": 0.09467762808890556,
-            "4_plus": 0.05191403121071396
+            "0": 0.3060997149605462,
+            "1": 0.33889150913575644,
+            "2": 0.2083528191937157,
+            "3": 0.09473117784549753,
+            "4_plus": 0.051924778864484204
           },
           "observed": {
             "0": 0.3193548387096774,
@@ -1567,11 +1573,11 @@
         },
         "goal_margin_rates": {
           "predicted": {
-            "underdog_by_2_plus": 0.08241136080236346,
-            "underdog_by_1": 0.14831292452080994,
-            "draw": 0.24968237572386712,
-            "favorite_by_1": 0.23973868220850322,
-            "favorite_by_2_plus": 0.27972188201964304
+            "underdog_by_2_plus": 0.08247921649421744,
+            "underdog_by_1": 0.14834010034877232,
+            "draw": 0.24963270096824675,
+            "favorite_by_1": 0.23971569121916786,
+            "favorite_by_2_plus": 0.27969993984549935
           },
           "observed": {
             "underdog_by_2_plus": 0.06451612903225806,
@@ -1584,54 +1590,54 @@
         "segments": {
           "neutral": {
             "matches": 81,
-            "brier": 0.6087525939780589,
-            "log_loss": 1.0220214790415398
+            "brier": 0.6087385503640016,
+            "log_loss": 1.0220125633608261
           },
           "non_neutral": {
             "matches": 74,
-            "brier": 0.5371522247008593,
-            "log_loss": 0.9193158428121382
+            "brier": 0.5377442068665647,
+            "log_loss": 0.9199784247704036
           },
           "close_elo": {
             "matches": 62,
-            "brier": 0.6626770274376432,
-            "log_loss": 1.0903572583346957
+            "brier": 0.6631238974924096,
+            "log_loss": 1.091036960747284
           },
           "moderate_elo": {
             "matches": 71,
-            "brier": 0.5468606978814411,
-            "log_loss": 0.9388540662887374
+            "brier": 0.546961804329162,
+            "log_loss": 0.9388278794127299
           },
           "strong_favorite": {
             "matches": 22,
-            "brier": 0.4156881586077343,
-            "log_loss": 0.7523783385096133
+            "brier": 0.4160420061686372,
+            "log_loss": 0.7527431845727874
           },
           "by_competition": {
             "continental_or_other_competitive": {
               "matches": 11,
-              "brier": 0.6488191212395789,
-              "log_loss": 1.0858369793001308
+              "brier": 0.6491026721857067,
+              "log_loss": 1.086098766278976
             },
             "friendly": {
               "matches": 50,
-              "brier": 0.51425540451264,
-              "log_loss": 0.8826898042063652
+              "brier": 0.5143552069032378,
+              "log_loss": 0.8828726853129644
             },
             "nations_league": {
               "matches": 25,
-              "brier": 0.6799715752789246,
-              "log_loss": 1.1281154044512447
+              "brier": 0.679789320910437,
+              "log_loss": 1.1272904257882406
             },
             "qualification": {
               "matches": 23,
-              "brier": 0.5265329083856884,
-              "log_loss": 0.8959380158459788
+              "brier": 0.5285468373448364,
+              "log_loss": 0.8987742559930184
             },
             "world_cup": {
               "matches": 46,
-              "brier": 0.5891064762168486,
-              "log_loss": 0.9983686024370577
+              "brier": 0.588949866667676,
+              "log_loss": 0.9981876486516165
             }
           },
           "confederation_matchup": null
@@ -2137,105 +2143,105 @@
       },
       "candidate_gate_metrics": {
         "matches": 155,
-        "multiclass_brier": 0.574569191871525,
-        "log_loss": 0.9729878204545996,
-        "poisson_deviance_per_team": 1.1540917570337754,
+        "multiclass_brier": 0.5748444766942574,
+        "log_loss": 0.9732994907434631,
+        "poisson_deviance_per_team": 1.1544291595974912,
         "accuracy": 0.5548387096774193,
         "class_brier": {
-          "home": 0.21173965269661338,
-          "draw": 0.17308501288285094,
-          "away": 0.18974452629206043
+          "home": 0.21187516307159754,
+          "draw": 0.1731229251103918,
+          "away": 0.18984638851226793
         },
-        "mean_probability_actual_class": 0.41481185277110316,
+        "mean_probability_actual_class": 0.4146568047285081,
         "predicted_class_frequencies": {
-          "home": 0.42491329386124893,
-          "draw": 0.25749644687719975,
-          "away": 0.31759025926155127
+          "home": 0.42417437498279315,
+          "draw": 0.2574369084811706,
+          "away": 0.3183887165360368
         },
         "actual_class_frequencies": {
           "home": 0.5032258064516129,
           "draw": 0.22580645161290322,
           "away": 0.2709677419354839
         },
-        "home_goal_mae": 1.005076609425886,
-        "away_goal_mae": 0.807129625628787,
-        "total_goal_mae": 1.2861093434089648,
-        "goal_difference_mae": 1.3053291635433004,
-        "home_goal_bias": -0.16600918885451982,
-        "away_goal_bias": 0.15695008237277974,
-        "total_goal_bias": -0.00905910648174024,
+        "home_goal_mae": 1.0050971159322877,
+        "away_goal_mae": 0.807840202500488,
+        "total_goal_mae": 1.286378105611553,
+        "goal_difference_mae": 1.3058749290723213,
+        "home_goal_bias": -0.16757375426512713,
+        "away_goal_bias": 0.15930103054434755,
+        "total_goal_bias": -0.008272723720779857,
         "fixed_width_reliability": [
           {
             "class": "home",
             "lower": 0.0,
             "upper": 0.1,
             "count": 2,
-            "mean_probability": 0.08903717911339487,
+            "mean_probability": 0.08788758069086075,
             "observed_rate": 0.0,
-            "absolute_gap": 0.08903717911339487
+            "absolute_gap": 0.08788758069086075
           },
           {
             "class": "home",
             "lower": 0.1,
             "upper": 0.2,
-            "count": 12,
-            "mean_probability": 0.17696859420219044,
-            "observed_rate": 0.3333333333333333,
-            "absolute_gap": 0.15636473913114288
+            "count": 13,
+            "mean_probability": 0.17787681767789215,
+            "observed_rate": 0.3076923076923077,
+            "absolute_gap": 0.12981549001441556
           },
           {
             "class": "home",
             "lower": 0.2,
             "upper": 0.3,
-            "count": 30,
-            "mean_probability": 0.24766220632662528,
-            "observed_rate": 0.23333333333333334,
-            "absolute_gap": 0.014328872993291941
+            "count": 29,
+            "mean_probability": 0.24845454769886674,
+            "observed_rate": 0.2413793103448276,
+            "absolute_gap": 0.007075237354039143
           },
           {
             "class": "home",
             "lower": 0.3,
             "upper": 0.4,
             "count": 32,
-            "mean_probability": 0.3559267144238864,
+            "mean_probability": 0.35518275592446397,
             "observed_rate": 0.375,
-            "absolute_gap": 0.019073285576113597
+            "absolute_gap": 0.019817244075536034
           },
           {
             "class": "home",
             "lower": 0.4,
             "upper": 0.5,
             "count": 25,
-            "mean_probability": 0.4526015353491299,
+            "mean_probability": 0.4521730571348767,
             "observed_rate": 0.52,
-            "absolute_gap": 0.06739846465087013
+            "absolute_gap": 0.06782694286512331
           },
           {
             "class": "home",
             "lower": 0.5,
             "upper": 0.6,
             "count": 23,
-            "mean_probability": 0.5454331338120249,
+            "mean_probability": 0.5443156343816041,
             "observed_rate": 0.6956521739130435,
-            "absolute_gap": 0.1502190401010186
+            "absolute_gap": 0.15133653953143933
           },
           {
             "class": "home",
             "lower": 0.6,
             "upper": 0.7,
             "count": 22,
-            "mean_probability": 0.6547635373055448,
+            "mean_probability": 0.6542193512025813,
             "observed_rate": 0.8636363636363636,
-            "absolute_gap": 0.20887282633081883
+            "absolute_gap": 0.2094170124337823
           },
           {
             "class": "home",
             "lower": 0.7,
             "upper": 0.8,
             "count": 9,
-            "mean_probability": 0.7195048584833977,
+            "mean_probability": 0.719045834742558,
             "observed_rate": 0.7777777777777778,
-            "absolute_gap": 0.058272919294380054
+            "absolute_gap": 0.05873194303521978
           },
           {
             "class": "home",
@@ -2268,28 +2274,28 @@
             "class": "draw",
             "lower": 0.1,
             "upper": 0.2,
-            "count": 34,
-            "mean_probability": 0.18660383784134627,
-            "observed_rate": 0.14705882352941177,
-            "absolute_gap": 0.039545014311934495
+            "count": 33,
+            "mean_probability": 0.18620417819303772,
+            "observed_rate": 0.15151515151515152,
+            "absolute_gap": 0.0346890266778862
           },
           {
             "class": "draw",
             "lower": 0.2,
             "upper": 0.3,
-            "count": 83,
-            "mean_probability": 0.25517962401970723,
-            "observed_rate": 0.24096385542168675,
-            "absolute_gap": 0.014215768598020484
+            "count": 84,
+            "mean_probability": 0.2544799991137715,
+            "observed_rate": 0.23809523809523808,
+            "absolute_gap": 0.016384761018533422
           },
           {
             "class": "draw",
             "lower": 0.3,
             "upper": 0.4,
             "count": 38,
-            "mean_probability": 0.3259871048874856,
+            "mean_probability": 0.32583323706985134,
             "observed_rate": 0.2631578947368421,
-            "absolute_gap": 0.06282921015064352
+            "absolute_gap": 0.06267534233300925
           },
           {
             "class": "draw",
@@ -2350,72 +2356,72 @@
             "lower": 0.0,
             "upper": 0.1,
             "count": 4,
-            "mean_probability": 0.08137680565469746,
+            "mean_probability": 0.0815419545339952,
             "observed_rate": 0.25,
-            "absolute_gap": 0.16862319434530254
+            "absolute_gap": 0.1684580454660048
           },
           {
             "class": "away",
             "lower": 0.1,
             "upper": 0.2,
             "count": 40,
-            "mean_probability": 0.15620720928529508,
+            "mean_probability": 0.15686701763127794,
             "observed_rate": 0.1,
-            "absolute_gap": 0.05620720928529507
+            "absolute_gap": 0.05686701763127794
           },
           {
             "class": "away",
             "lower": 0.2,
             "upper": 0.3,
             "count": 40,
-            "mean_probability": 0.2521867154819211,
+            "mean_probability": 0.2526998340784752,
             "observed_rate": 0.225,
-            "absolute_gap": 0.027186715481921114
+            "absolute_gap": 0.027699834078475177
           },
           {
             "class": "away",
             "lower": 0.3,
             "upper": 0.4,
             "count": 28,
-            "mean_probability": 0.34489146984054964,
+            "mean_probability": 0.3457572848820468,
             "observed_rate": 0.32142857142857145,
-            "absolute_gap": 0.023462898411978184
+            "absolute_gap": 0.02432871345347537
           },
           {
             "class": "away",
             "lower": 0.4,
             "upper": 0.5,
             "count": 19,
-            "mean_probability": 0.45156065513533833,
+            "mean_probability": 0.45247458648132854,
             "observed_rate": 0.47368421052631576,
-            "absolute_gap": 0.022123555390977434
+            "absolute_gap": 0.02120962404498722
           },
           {
             "class": "away",
             "lower": 0.5,
             "upper": 0.6,
             "count": 13,
-            "mean_probability": 0.554848436251566,
+            "mean_probability": 0.5565029861969755,
             "observed_rate": 0.5384615384615384,
-            "absolute_gap": 0.016386897790027555
+            "absolute_gap": 0.018041447735437033
           },
           {
             "class": "away",
             "lower": 0.6,
             "upper": 0.7,
             "count": 9,
-            "mean_probability": 0.6292952284536284,
+            "mean_probability": 0.6304915997264491,
             "observed_rate": 0.1111111111111111,
-            "absolute_gap": 0.5181841173425172
+            "absolute_gap": 0.5193804886153379
           },
           {
             "class": "away",
             "lower": 0.7,
             "upper": 0.8,
             "count": 2,
-            "mean_probability": 0.725962820886605,
+            "mean_probability": 0.7271124193091392,
             "observed_rate": 1.0,
-            "absolute_gap": 0.274037179113395
+            "absolute_gap": 0.27288758069086083
           },
           {
             "class": "away",
@@ -2439,189 +2445,189 @@
         "adaptive_reliability": [
           {
             "class": "home",
-            "lower": 0.08067769894145796,
-            "upper": 0.25038911263588026,
+            "lower": 0.07959039592785437,
+            "upper": 0.24985758492837198,
             "count": 31,
-            "mean_probability": 0.2000230680591442,
+            "mean_probability": 0.19917352218946952,
             "observed_rate": 0.2903225806451613,
-            "absolute_gap": 0.09029951258601712
+            "absolute_gap": 0.0911490584556918
           },
           {
             "class": "home",
-            "lower": 0.2526797936389564,
-            "upper": 0.3632671107802222,
+            "lower": 0.25033902092095056,
+            "upper": 0.36338030901176593,
             "count": 31,
-            "mean_probability": 0.30864486565793603,
+            "mean_probability": 0.30781401789872304,
             "observed_rate": 0.2903225806451613,
-            "absolute_gap": 0.01832228501277472
+            "absolute_gap": 0.017491437253561726
           },
           {
             "class": "home",
-            "lower": 0.36456238972757127,
-            "upper": 0.4652472893868061,
+            "lower": 0.3648710594423668,
+            "upper": 0.4658398784586167,
             "count": 31,
-            "mean_probability": 0.41193159769138704,
+            "mean_probability": 0.41134392717258805,
             "observed_rate": 0.5161290322580645,
-            "absolute_gap": 0.10419743456667746
+            "absolute_gap": 0.10478510508547645
           },
           {
             "class": "home",
-            "lower": 0.4812473544879199,
-            "upper": 0.5915660159029524,
+            "lower": 0.48145516165968644,
+            "upper": 0.5895384887940752,
             "count": 31,
-            "mean_probability": 0.5304075331535012,
+            "mean_probability": 0.5295004644551263,
             "observed_rate": 0.5806451612903226,
-            "absolute_gap": 0.05023762813682142
+            "absolute_gap": 0.05114469683519629
           },
           {
             "class": "home",
-            "lower": 0.6022499690094879,
-            "upper": 0.7459762460776158,
+            "lower": 0.6024724176840544,
+            "upper": 0.7454082166881861,
             "count": 31,
-            "mean_probability": 0.6735594047442761,
+            "mean_probability": 0.6730399431980585,
             "observed_rate": 0.8387096774193549,
-            "absolute_gap": 0.16515027267507876
+            "absolute_gap": 0.16566973422129638
           },
           {
             "class": "draw",
             "lower": 0.185,
-            "upper": 0.19331197628674512,
+            "upper": 0.19314575581739307,
             "count": 31,
-            "mean_probability": 0.18544174291770277,
+            "mean_probability": 0.18546061708592365,
             "observed_rate": 0.16129032258064516,
-            "absolute_gap": 0.02415142033705761
+            "absolute_gap": 0.024170294505278495
           },
           {
             "class": "draw",
-            "lower": 0.19659326915371378,
-            "upper": 0.24454900987862344,
+            "lower": 0.1964118368089779,
+            "upper": 0.24526507282625548,
             "count": 31,
-            "mean_probability": 0.2183718539343892,
+            "mean_probability": 0.21824826586362955,
             "observed_rate": 0.16129032258064516,
-            "absolute_gap": 0.05708153135374405
+            "absolute_gap": 0.0569579432829844
           },
           {
             "class": "draw",
-            "lower": 0.24607932066595062,
-            "upper": 0.273424852007459,
+            "lower": 0.2466643879511068,
+            "upper": 0.2729626780724315,
             "count": 31,
-            "mean_probability": 0.2606843469015707,
+            "mean_probability": 0.26077516455244065,
             "observed_rate": 0.25806451612903225,
-            "absolute_gap": 0.0026198307725384673
+            "absolute_gap": 0.0027106484234084016
           },
           {
             "class": "draw",
-            "lower": 0.27598327712273,
-            "upper": 0.3059307743840589,
+            "lower": 0.275880641953311,
+            "upper": 0.30543900931898416,
             "count": 31,
-            "mean_probability": 0.29210104138505283,
+            "mean_probability": 0.29195977275573237,
             "observed_rate": 0.3225806451612903,
-            "absolute_gap": 0.030479603776237485
+            "absolute_gap": 0.030620872405557942
           },
           {
             "class": "draw",
-            "lower": 0.3062299368341352,
-            "upper": 0.384953760848044,
+            "lower": 0.30643544462976297,
+            "upper": 0.38460740595601894,
             "count": 31,
-            "mean_probability": 0.33088324924728213,
+            "mean_probability": 0.33074072214812567,
             "observed_rate": 0.22580645161290322,
-            "absolute_gap": 0.10507679763437891
+            "absolute_gap": 0.10493427053522245
           },
           {
             "class": "away",
-            "lower": 0.06902375392238418,
-            "upper": 0.17818599130756707,
+            "lower": 0.06959178331181384,
+            "upper": 0.1779732226314598,
             "count": 31,
-            "mean_probability": 0.1319796232251959,
+            "mean_probability": 0.13250495559409894,
             "observed_rate": 0.0967741935483871,
-            "absolute_gap": 0.035205429676808814
+            "absolute_gap": 0.03573076204571185
           },
           {
             "class": "away",
-            "lower": 0.17944570040084437,
-            "upper": 0.2485342599825101,
+            "lower": 0.18060058158652112,
+            "upper": 0.2501571711362495,
             "count": 31,
-            "mean_probability": 0.21252747800735763,
+            "mean_probability": 0.213121888152025,
             "observed_rate": 0.1935483870967742,
-            "absolute_gap": 0.018979090910583446
+            "absolute_gap": 0.019573501055250825
           },
           {
             "class": "away",
-            "lower": 0.25048384942438473,
-            "upper": 0.32247702662366073,
+            "lower": 0.25052153460161425,
+            "upper": 0.3226817797804646,
             "count": 31,
-            "mean_probability": 0.28480517061959,
+            "mean_probability": 0.2854976398815163,
             "observed_rate": 0.22580645161290322,
-            "absolute_gap": 0.05899871900668677
+            "absolute_gap": 0.059691188268613055
           },
           {
             "class": "away",
-            "lower": 0.3228069655498549,
-            "upper": 0.4579864838988664,
+            "lower": 0.3229494234305375,
+            "upper": 0.4600448151670372,
             "count": 31,
-            "mean_probability": 0.3880651738730943,
+            "mean_probability": 0.3889218591329641,
             "observed_rate": 0.41935483870967744,
-            "absolute_gap": 0.03128966483658313
+            "absolute_gap": 0.030432979576713315
           },
           {
             "class": "away",
-            "lower": 0.46294708139987933,
-            "upper": 0.7343223010585419,
+            "lower": 0.4650027979770468,
+            "upper": 0.7354096040721456,
             "count": 31,
-            "mean_probability": 0.5705738505825199,
+            "mean_probability": 0.5718972399195782,
             "observed_rate": 0.41935483870967744,
-            "absolute_gap": 0.15121901187284242
+            "absolute_gap": 0.15254240120990076
           }
         ],
         "calibration": {
-          "expected_calibration_error": 0.061889439516423804,
-          "maximum_calibration_error": 0.5181841173425172,
+          "expected_calibration_error": 0.06131836181684483,
+          "maximum_calibration_error": 0.5193804886153379,
           "maximum_calibration_error_bucket": {
             "class": "away",
             "lower": 0.6,
             "upper": 0.7,
             "count": 9,
-            "mean_probability": 0.6292952284536284,
+            "mean_probability": 0.6304915997264491,
             "observed_rate": 0.1111111111111111,
-            "absolute_gap": 0.5181841173425172
+            "absolute_gap": 0.5193804886153379
           },
           "support_aware_minimum_count": 30,
-          "support_aware_maximum_calibration_error": 0.06282921015064352
+          "support_aware_maximum_calibration_error": 0.06267534233300925
         },
         "confidence_buckets": {
           "below_40": {
             "count": 33,
-            "mean_predicted_favorite_probability": 0.37467079305011675,
+            "mean_predicted_favorite_probability": 0.37459753483100633,
             "observed_favorite_win_rate": 0.36363636363636365,
-            "absolute_calibration_gap": 0.0110344294137531,
+            "absolute_calibration_gap": 0.010961171194642683,
             "error_rate": 0.6363636363636364
           },
           "40_50": {
             "count": 44,
-            "mean_predicted_favorite_probability": 0.45215206434772,
+            "mean_predicted_favorite_probability": 0.45230326298902646,
             "observed_favorite_win_rate": 0.5,
-            "absolute_calibration_gap": 0.047847935652280016,
+            "absolute_calibration_gap": 0.047696737010973544,
             "error_rate": 0.5
           },
           "50_60": {
             "count": 36,
-            "mean_predicted_favorite_probability": 0.5488331041374148,
+            "mean_predicted_favorite_probability": 0.5487166225371548,
             "observed_favorite_win_rate": 0.6388888888888888,
-            "absolute_calibration_gap": 0.09005578475147402,
+            "absolute_calibration_gap": 0.09017226635173403,
             "error_rate": 0.36111111111111116
           },
           "60_70": {
             "count": 31,
-            "mean_predicted_favorite_probability": 0.6473695121549884,
+            "mean_predicted_favorite_probability": 0.6473306491611236,
             "observed_favorite_win_rate": 0.6451612903225806,
-            "absolute_calibration_gap": 0.002208221832407764,
+            "absolute_calibration_gap": 0.0021693588385429674,
             "error_rate": 0.3548387096774194
           },
           "70_80": {
             "count": 11,
-            "mean_predicted_favorite_probability": 0.7206790334657991,
+            "mean_predicted_favorite_probability": 0.7205124864819364,
             "observed_favorite_win_rate": 0.8181818181818182,
-            "absolute_calibration_gap": 0.09750278471601914,
+            "absolute_calibration_gap": 0.09766933169988179,
             "error_rate": 0.18181818181818177
           },
           "above_80": {
@@ -2939,34 +2945,40 @@
         "2023-12-16::MEX::COL::Friendly"
       ],
       "fitted_parameters": {
-        "type": "ridge_poisson_glm",
-        "coefficients": [
-          0.13928304441758096,
-          0.5853866208386791,
-          0.218521236642886,
-          0.15817776375586542,
-          0.02785921726053842,
-          0.10400183957868009,
-          0.2640190479554441,
-          -0.11216007506488132,
-          0.07383643116208977,
-          0.15629565606965773,
-          -0.1647528670356927
-        ],
-        "feature_names": [
-          "intercept",
-          "elo_side_gap",
-          "long_attack",
-          "opponent_defense_weakness",
-          "short_attack",
-          "opponent_short_defense_weakness",
-          "home_non_neutral",
-          "qualification",
-          "nations_league",
-          "world_cup",
-          "other_competitive"
-        ],
-        "ridge": 1.0
+        "model_version": "elo-context-v4.4.1-home-xg-correction-experimental",
+        "architecture": "regularized_home_advantage",
+        "shared": {
+          "type": "ridge_poisson_glm",
+          "coefficients": [
+            0.14124359510085846,
+            0.5858077039452594,
+            0.21868190525368228,
+            0.15818635985404278,
+            0.027920450138979706,
+            0.10433693568913675,
+            0.2584430704219917,
+            -0.11123985298475586,
+            0.07476376922144116,
+            0.1547389496140371,
+            -0.16512414793753144
+          ],
+          "feature_names": [
+            "intercept",
+            "elo_side_gap",
+            "long_attack",
+            "opponent_defense_weakness",
+            "short_attack",
+            "opponent_short_defense_weakness",
+            "home_non_neutral",
+            "qualification",
+            "nations_league",
+            "world_cup",
+            "other_competitive"
+          ],
+          "ridge": 8.0
+        },
+        "home": null,
+        "away": null
       },
       "current_metrics": {
         "matches": 98,
@@ -3111,23 +3123,23 @@
       },
       "candidate_metrics": {
         "matches": 98,
-        "multiclass_brier": 0.596110548403167,
-        "log_loss": 0.9923274354658849,
+        "multiclass_brier": 0.5957492474398046,
+        "log_loss": 0.9919327218828726,
         "accuracy": 0.46938775510204084,
-        "mean_home_xg": 1.4671553295472997,
+        "mean_home_xg": 1.464034349680923,
         "actual_home_goals": 1.6326530612244898,
-        "mean_away_xg": 1.0583115627635227,
+        "mean_away_xg": 1.0607822879423112,
         "actual_away_goals": 1.2346938775510203,
-        "home_goal_mae": 1.0244113586245103,
-        "away_goal_mae": 0.8830226334689477,
-        "total_goal_error": -0.34188004646468784,
-        "goal_difference_error": 0.010884583110307489,
-        "poisson_deviance_per_team": 1.1693834063803588,
-        "mean_max_probability": 0.5226005147157086,
+        "home_goal_mae": 1.0243558004729565,
+        "away_goal_mae": 0.8829468855653193,
+        "total_goal_error": -0.342530301152276,
+        "goal_difference_error": 0.005292878065142226,
+        "poisson_deviance_per_team": 1.1693172790867061,
+        "mean_max_probability": 0.5224057583733724,
         "predicted_class_rates": {
-          "home": 0.45098303079547997,
-          "draw": 0.2548960002948251,
-          "away": 0.2941209689096949
+          "home": 0.44990760181453837,
+          "draw": 0.2549035687095579,
+          "away": 0.29518882947590375
         },
         "actual_class_rates": {
           "home": 0.41836734693877553,
@@ -3136,12 +3148,12 @@
         },
         "confidence_buckets": {
           "below_40": {
-            "matches": 20,
-            "accuracy": 0.4
+            "matches": 18,
+            "accuracy": 0.4444444444444444
           },
           "40_50": {
-            "matches": 29,
-            "accuracy": 0.2413793103448276
+            "matches": 31,
+            "accuracy": 0.22580645161290322
           },
           "50_60": {
             "matches": 22,
@@ -3162,18 +3174,18 @@
         },
         "xg_difference_distribution": {
           "below_0_10": 8,
-          "below_0_25": 25,
+          "below_0_25": 26,
           "below_0_50": 46,
           "above_0_75": 36,
           "above_1_00": 22
         },
         "goal_count_rates": {
           "predicted": {
-            "0": 0.3136334390809371,
-            "1": 0.33668731299479754,
-            "2": 0.20376070255881878,
-            "3": 0.09234619403214507,
-            "4_plus": 0.05357235133330138
+            "0": 0.3135707864438684,
+            "1": 0.3367810544104953,
+            "2": 0.20383611638083557,
+            "3": 0.09234592085693516,
+            "4_plus": 0.05346612190786534
           },
           "observed": {
             "0": 0.2755102040816326,
@@ -3185,11 +3197,11 @@
         },
         "goal_margin_rates": {
           "predicted": {
-            "underdog_by_2_plus": 0.08076247691269531,
-            "underdog_by_1": 0.14546581216132423,
-            "draw": 0.24521606386546385,
-            "favorite_by_1": 0.237543296107437,
-            "favorite_by_2_plus": 0.2905990189125879
+            "underdog_by_2_plus": 0.08084907631525007,
+            "underdog_by_1": 0.14556534928234416,
+            "draw": 0.24531317833973612,
+            "favorite_by_1": 0.23758416789381123,
+            "favorite_by_2_plus": 0.2902814892516311
           },
           "observed": {
             "underdog_by_2_plus": 0.14285714285714285,
@@ -3202,49 +3214,49 @@
         "segments": {
           "neutral": {
             "matches": 22,
-            "brier": 0.5943511623238059,
-            "log_loss": 1.0060086297261892
+            "brier": 0.5944251062125595,
+            "log_loss": 1.0061924142528602
           },
           "non_neutral": {
             "matches": 76,
-            "brier": 0.5966198443735085,
-            "log_loss": 0.9883670897589544
+            "brier": 0.5961325514792704,
+            "log_loss": 0.9878049161968242
           },
           "close_elo": {
             "matches": 44,
-            "brier": 0.6963838467260481,
-            "log_loss": 1.1364559963854763
+            "brier": 0.6952390820099833,
+            "log_loss": 1.1348329006895927
           },
           "moderate_elo": {
             "matches": 38,
-            "brier": 0.5425159831428761,
-            "log_loss": 0.9181925238484989
+            "brier": 0.5426845827270416,
+            "log_loss": 0.9185309602364388
           },
           "strong_favorite": {
             "matches": 16,
-            "brier": 0.447646070508436,
-            "log_loss": 0.7720443080282969
+            "brier": 0.44818078106462544,
+            "log_loss": 0.7732864140746772
           },
           "by_competition": {
             "continental_or_other_competitive": {
               "matches": 11,
-              "brier": 0.6473201399167502,
-              "log_loss": 1.0572377801964377
+              "brier": 0.6471479833059598,
+              "log_loss": 1.0572287904812725
             },
             "friendly": {
               "matches": 48,
-              "brier": 0.5809931425982499,
-              "log_loss": 0.9679754505450336
+              "brier": 0.5807275741918991,
+              "log_loss": 0.9677570578428546
             },
             "nations_league": {
               "matches": 8,
-              "brier": 0.4738658964623472,
-              "log_loss": 0.8320284544981691
+              "brier": 0.47309090068786663,
+              "log_loss": 0.8308777851107411
             },
             "qualification": {
               "matches": 31,
-              "brier": 0.6328940060648826,
-              "log_loss": 1.0483685106886735
+              "brier": 0.6324241182587486,
+              "log_loss": 1.0477589997382137
             }
           },
           "confederation_matchup": null
@@ -3696,33 +3708,33 @@
       },
       "candidate_gate_metrics": {
         "matches": 98,
-        "multiclass_brier": 0.596110548403167,
-        "log_loss": 0.9923274354658849,
-        "poisson_deviance_per_team": 1.1693834063803588,
+        "multiclass_brier": 0.5957492474398046,
+        "log_loss": 0.9919327218828726,
+        "poisson_deviance_per_team": 1.1693172790867061,
         "accuracy": 0.46938775510204084,
         "class_brier": {
-          "home": 0.22103405049247926,
-          "draw": 0.17402427371309614,
-          "away": 0.20105222419759167
+          "home": 0.22089126418794564,
+          "draw": 0.1740172987025209,
+          "away": 0.20084068454933804
         },
-        "mean_probability_actual_class": 0.4086366453525511,
+        "mean_probability_actual_class": 0.40874004619440313,
         "predicted_class_frequencies": {
-          "home": 0.45098303079547997,
-          "draw": 0.2548960002948251,
-          "away": 0.2941209689096948
+          "home": 0.4499076018145385,
+          "draw": 0.2549035687095578,
+          "away": 0.29518882947590375
         },
         "actual_class_frequencies": {
           "home": 0.41836734693877553,
           "draw": 0.23469387755102042,
           "away": 0.3469387755102041
         },
-        "home_goal_mae": 1.0244113586245105,
-        "away_goal_mae": 0.8830226334689476,
-        "total_goal_mae": 1.3357789778925293,
-        "goal_difference_mae": 1.418814023118539,
-        "home_goal_bias": -0.16549773167719006,
-        "away_goal_bias": -0.17638231478749788,
-        "total_goal_bias": -0.34188004646468784,
+        "home_goal_mae": 1.0243558004729563,
+        "away_goal_mae": 0.8829468855653194,
+        "total_goal_mae": 1.3363206008070487,
+        "goal_difference_mae": 1.418040571444041,
+        "home_goal_bias": -0.16861871154356697,
+        "away_goal_bias": -0.17391158960870914,
+        "total_goal_bias": -0.342530301152276,
         "fixed_width_reliability": [
           {
             "class": "home",
@@ -3738,72 +3750,72 @@
             "lower": 0.1,
             "upper": 0.2,
             "count": 4,
-            "mean_probability": 0.16828758209717054,
+            "mean_probability": 0.16754365678836886,
             "observed_rate": 0.25,
-            "absolute_gap": 0.08171241790282946
+            "absolute_gap": 0.08245634321163114
           },
           {
             "class": "home",
             "lower": 0.2,
             "upper": 0.3,
             "count": 19,
-            "mean_probability": 0.24612068017640362,
+            "mean_probability": 0.24509605020515607,
             "observed_rate": 0.3684210526315789,
-            "absolute_gap": 0.1223003724551753
+            "absolute_gap": 0.12332500242642286
           },
           {
             "class": "home",
             "lower": 0.3,
             "upper": 0.4,
             "count": 19,
-            "mean_probability": 0.34927492606394867,
+            "mean_probability": 0.34791977670310603,
             "observed_rate": 0.3157894736842105,
-            "absolute_gap": 0.033485452379738156
+            "absolute_gap": 0.03213030301889552
           },
           {
             "class": "home",
             "lower": 0.4,
             "upper": 0.5,
             "count": 22,
-            "mean_probability": 0.43976636212154196,
+            "mean_probability": 0.4383853355603787,
             "observed_rate": 0.22727272727272727,
-            "absolute_gap": 0.2124936348488147
+            "absolute_gap": 0.2111126082876514
           },
           {
             "class": "home",
             "lower": 0.5,
             "upper": 0.6,
             "count": 10,
-            "mean_probability": 0.562832481033116,
+            "mean_probability": 0.561542860441594,
             "observed_rate": 0.4,
-            "absolute_gap": 0.16283248103311598
+            "absolute_gap": 0.16154286044159394
           },
           {
             "class": "home",
             "lower": 0.6,
             "upper": 0.7,
             "count": 11,
-            "mean_probability": 0.6602576701099198,
+            "mean_probability": 0.6595921237317851,
             "observed_rate": 0.7272727272727273,
-            "absolute_gap": 0.06701505716280753
+            "absolute_gap": 0.06768060354094219
           },
           {
             "class": "home",
             "lower": 0.7,
             "upper": 0.8,
             "count": 12,
-            "mean_probability": 0.7368251931639925,
+            "mean_probability": 0.736286143680434,
             "observed_rate": 0.75,
-            "absolute_gap": 0.013174806836007469
+            "absolute_gap": 0.013713856319566009
           },
           {
             "class": "home",
             "lower": 0.8,
             "upper": 0.9,
             "count": 1,
-            "mean_probability": 0.8027487048195534,
+            "mean_probability": 0.8026165674551939,
             "observed_rate": 1.0,
-            "absolute_gap": 0.1972512951804466
+            "absolute_gap": 0.19738343254480606
           },
           {
             "class": "home",
@@ -3827,28 +3839,28 @@
             "class": "draw",
             "lower": 0.1,
             "upper": 0.2,
-            "count": 22,
-            "mean_probability": 0.18704765388584219,
-            "observed_rate": 0.13636363636363635,
-            "absolute_gap": 0.05068401752220583
+            "count": 24,
+            "mean_probability": 0.1881667182660192,
+            "observed_rate": 0.16666666666666666,
+            "absolute_gap": 0.021500051599352532
           },
           {
             "class": "draw",
             "lower": 0.2,
             "upper": 0.3,
-            "count": 47,
-            "mean_probability": 0.24982253608006388,
-            "observed_rate": 0.1702127659574468,
-            "absolute_gap": 0.07960977012261708
+            "count": 45,
+            "mean_probability": 0.25199402694458856,
+            "observed_rate": 0.15555555555555556,
+            "absolute_gap": 0.096438471389033
           },
           {
             "class": "draw",
             "lower": 0.3,
             "upper": 0.4,
             "count": 29,
-            "mean_probability": 0.3145896706083217,
+            "mean_probability": 0.31464887181537005,
             "observed_rate": 0.41379310344827586,
-            "absolute_gap": 0.09920343283995414
+            "absolute_gap": 0.09914423163290581
           },
           {
             "class": "draw",
@@ -3909,63 +3921,63 @@
             "lower": 0.0,
             "upper": 0.1,
             "count": 10,
-            "mean_probability": 0.06282853320268925,
+            "mean_probability": 0.06336058500214677,
             "observed_rate": 0.0,
-            "absolute_gap": 0.06282853320268925
+            "absolute_gap": 0.06336058500214677
           },
           {
             "class": "away",
             "lower": 0.1,
             "upper": 0.2,
             "count": 19,
-            "mean_probability": 0.14440782857714707,
+            "mean_probability": 0.14499135697000215,
             "observed_rate": 0.15789473684210525,
-            "absolute_gap": 0.013486908264958186
+            "absolute_gap": 0.012903379872103105
           },
           {
             "class": "away",
             "lower": 0.2,
             "upper": 0.3,
-            "count": 27,
-            "mean_probability": 0.25860916880667256,
-            "observed_rate": 0.4074074074074074,
-            "absolute_gap": 0.14879823860073482
+            "count": 26,
+            "mean_probability": 0.2580237665165734,
+            "observed_rate": 0.38461538461538464,
+            "absolute_gap": 0.12659161809881125
           },
           {
             "class": "away",
             "lower": 0.3,
             "upper": 0.4,
-            "count": 20,
-            "mean_probability": 0.34811603983370676,
-            "observed_rate": 0.45,
-            "absolute_gap": 0.10188396016629325
+            "count": 19,
+            "mean_probability": 0.34157874525256593,
+            "observed_rate": 0.5263157894736842,
+            "absolute_gap": 0.18473704422111825
           },
           {
             "class": "away",
             "lower": 0.4,
             "upper": 0.5,
-            "count": 7,
-            "mean_probability": 0.44338306116220194,
-            "observed_rate": 0.2857142857142857,
-            "absolute_gap": 0.15766877544791624
+            "count": 9,
+            "mean_probability": 0.43511029361195447,
+            "observed_rate": 0.2222222222222222,
+            "absolute_gap": 0.21288807138973226
           },
           {
             "class": "away",
             "lower": 0.5,
             "upper": 0.6,
             "count": 12,
-            "mean_probability": 0.5403856831406418,
+            "mean_probability": 0.5418609359338422,
             "observed_rate": 0.5833333333333334,
-            "absolute_gap": 0.04294765019269153
+            "absolute_gap": 0.04147239739949116
           },
           {
             "class": "away",
             "lower": 0.6,
             "upper": 0.7,
             "count": 3,
-            "mean_probability": 0.6395809659600008,
+            "mean_probability": 0.6410418977479012,
             "observed_rate": 0.6666666666666666,
-            "absolute_gap": 0.027085700706665827
+            "absolute_gap": 0.025624768918765417
           },
           {
             "class": "away",
@@ -3998,142 +4010,142 @@
         "adaptive_reliability": [
           {
             "class": "home",
-            "lower": 0.16032451511788384,
-            "upper": 0.34051579851282454,
+            "lower": 0.15999018277449323,
+            "upper": 0.33866407285930006,
             "count": 32,
-            "mean_probability": 0.2585998943192799,
+            "mean_probability": 0.257434512996929,
             "observed_rate": 0.34375,
-            "absolute_gap": 0.08515010568072012
+            "absolute_gap": 0.08631548700307101
           },
           {
             "class": "home",
-            "lower": 0.3509980531751435,
-            "upper": 0.5046000688859575,
+            "lower": 0.3493352729627185,
+            "upper": 0.5029201675209486,
             "count": 33,
-            "mean_probability": 0.4209069777060093,
+            "mean_probability": 0.41960510522296984,
             "observed_rate": 0.2727272727272727,
-            "absolute_gap": 0.14817970497873661
+            "absolute_gap": 0.14687783249569714
           },
           {
             "class": "home",
-            "lower": 0.531954859657237,
-            "upper": 0.8027487048195534,
+            "lower": 0.530394758623302,
+            "upper": 0.8026165674551939,
             "count": 33,
-            "mean_probability": 0.6676124283467206,
+            "mean_probability": 0.6668506693807584,
             "observed_rate": 0.6363636363636364,
-            "absolute_gap": 0.03124879198308428
+            "absolute_gap": 0.030487033017122078
           },
           {
             "class": "draw",
             "lower": 0.185,
-            "upper": 0.22304565241625007,
+            "upper": 0.22286058832094877,
             "count": 32,
-            "mean_probability": 0.19383099915731097,
+            "mean_probability": 0.1937897827214197,
             "observed_rate": 0.15625,
-            "absolute_gap": 0.037580999157310974
+            "absolute_gap": 0.037539782721419696
           },
           {
             "class": "draw",
-            "lower": 0.2232022424016872,
-            "upper": 0.29168652610678375,
+            "lower": 0.2235457691886526,
+            "upper": 0.2917259972641773,
             "count": 33,
-            "mean_probability": 0.2566490879676866,
+            "mean_probability": 0.2566449109306647,
             "observed_rate": 0.18181818181818182,
-            "absolute_gap": 0.07483090614950477
+            "absolute_gap": 0.07482672911248289
           },
           {
             "class": "draw",
-            "lower": 0.2932056902031692,
-            "upper": 0.36289533559868714,
+            "lower": 0.29352485437537434,
+            "upper": 0.3631243283129483,
             "count": 33,
-            "mean_probability": 0.31235745917955304,
+            "mean_probability": 0.3124240795678576,
             "observed_rate": 0.36363636363636365,
-            "absolute_gap": 0.0512789044568106
+            "absolute_gap": 0.05121228406850603
           },
           {
             "class": "away",
-            "lower": 0.012251295180446497,
-            "upper": 0.20500208633973305,
+            "lower": 0.012383432544806025,
+            "upper": 0.20630250342696557,
             "count": 32,
-            "mean_probability": 0.12431770518467897,
+            "mean_probability": 0.12490349301588531,
             "observed_rate": 0.15625,
-            "absolute_gap": 0.03193229481532103
+            "absolute_gap": 0.03134650698411469
           },
           {
             "class": "away",
-            "lower": 0.22156475804157474,
-            "upper": 0.3315473344137674,
+            "lower": 0.22204263971217145,
+            "upper": 0.33169545521375954,
             "count": 33,
-            "mean_probability": 0.27967867044583833,
+            "mean_probability": 0.2808080853599413,
             "observed_rate": 0.3939393939393939,
-            "absolute_gap": 0.1142607234935556
+            "absolute_gap": 0.11313130857945264
           },
           {
             "class": "away",
-            "lower": 0.33447950255189757,
-            "upper": 0.6546754848821161,
+            "lower": 0.33599199193493723,
+            "upper": 0.6550098172255068,
             "count": 33,
-            "mean_probability": 0.4732209776523548,
+            "mean_probability": 0.4746947483409749,
             "observed_rate": 0.48484848484848486,
-            "absolute_gap": 0.011627507196130038
+            "absolute_gap": 0.010153736507509947
           }
         ],
         "calibration": {
-          "expected_calibration_error": 0.0920277735621357,
-          "maximum_calibration_error": 0.2124936348488147,
+          "expected_calibration_error": 0.09711369175185905,
+          "maximum_calibration_error": 0.21288807138973226,
           "maximum_calibration_error_bucket": {
-            "class": "home",
+            "class": "away",
             "lower": 0.4,
             "upper": 0.5,
-            "count": 22,
-            "mean_probability": 0.43976636212154196,
-            "observed_rate": 0.22727272727272727,
-            "absolute_gap": 0.2124936348488147
+            "count": 9,
+            "mean_probability": 0.43511029361195447,
+            "observed_rate": 0.2222222222222222,
+            "absolute_gap": 0.21288807138973226
           },
           "support_aware_minimum_count": 30,
-          "support_aware_maximum_calibration_error": 0.07960977012261708
+          "support_aware_maximum_calibration_error": 0.096438471389033
         },
         "confidence_buckets": {
           "below_40": {
-            "count": 20,
-            "mean_predicted_favorite_probability": 0.3748563873717329,
-            "observed_favorite_win_rate": 0.4,
-            "absolute_calibration_gap": 0.025143612628267142,
-            "error_rate": 0.6
+            "count": 18,
+            "mean_predicted_favorite_probability": 0.3722691730121553,
+            "observed_favorite_win_rate": 0.4444444444444444,
+            "absolute_calibration_gap": 0.07217527143228913,
+            "error_rate": 0.5555555555555556
           },
           "40_50": {
-            "count": 29,
-            "mean_predicted_favorite_probability": 0.44063935844170127,
-            "observed_favorite_win_rate": 0.2413793103448276,
-            "absolute_calibration_gap": 0.19926004809687367,
-            "error_rate": 0.7586206896551724
+            "count": 31,
+            "mean_predicted_favorite_probability": 0.437434516930191,
+            "observed_favorite_win_rate": 0.22580645161290322,
+            "absolute_calibration_gap": 0.21162806531728776,
+            "error_rate": 0.7741935483870968
           },
           "50_60": {
             "count": 22,
-            "mean_predicted_favorite_probability": 0.5505887730917665,
+            "mean_predicted_favorite_probability": 0.5508072652555475,
             "observed_favorite_win_rate": 0.5,
-            "absolute_calibration_gap": 0.05058877309176646,
+            "absolute_calibration_gap": 0.05080726525554746,
             "error_rate": 0.5
           },
           "60_70": {
             "count": 14,
-            "mean_predicted_favorite_probability": 0.65582694779208,
+            "mean_predicted_favorite_probability": 0.6556170753066671,
             "observed_favorite_win_rate": 0.7142857142857143,
-            "absolute_calibration_gap": 0.05845876649363435,
+            "absolute_calibration_gap": 0.05866863897904717,
             "error_rate": 0.2857142857142857
           },
           "70_80": {
             "count": 12,
-            "mean_predicted_favorite_probability": 0.7368251931639925,
+            "mean_predicted_favorite_probability": 0.736286143680434,
             "observed_favorite_win_rate": 0.75,
-            "absolute_calibration_gap": 0.013174806836007469,
+            "absolute_calibration_gap": 0.013713856319566009,
             "error_rate": 0.25
           },
           "above_80": {
             "count": 1,
-            "mean_predicted_favorite_probability": 0.8027487048195534,
+            "mean_predicted_favorite_probability": 0.8026165674551939,
             "observed_favorite_win_rate": 1.0,
-            "absolute_calibration_gap": 0.1972512951804466,
+            "absolute_calibration_gap": 0.19738343254480606,
             "error_rate": 0.0
           }
         }
@@ -4567,34 +4579,40 @@
         "2024-12-28::IRQ::KSA::Gulf Cup"
       ],
       "fitted_parameters": {
-        "type": "ridge_poisson_glm",
-        "coefficients": [
-          0.18109361199534918,
-          0.5493771431273267,
-          0.23649253732679537,
-          0.18177899623270993,
-          0.03835966852024357,
-          0.13156002165548916,
-          0.2589583429971101,
-          -0.12167671854652079,
-          0.03401210407367498,
-          0.12776259380462587,
-          -0.17907262314296324
-        ],
-        "feature_names": [
-          "intercept",
-          "elo_side_gap",
-          "long_attack",
-          "opponent_defense_weakness",
-          "short_attack",
-          "opponent_short_defense_weakness",
-          "home_non_neutral",
-          "qualification",
-          "nations_league",
-          "world_cup",
-          "other_competitive"
-        ],
-        "ridge": 1.0
+        "model_version": "elo-context-v4.4.1-home-xg-correction-experimental",
+        "architecture": "regularized_home_advantage",
+        "shared": {
+          "type": "ridge_poisson_glm",
+          "coefficients": [
+            0.1827129889749663,
+            0.5497963429921734,
+            0.2365676798430402,
+            0.18176702450677848,
+            0.03851143002885333,
+            0.13171059340940783,
+            0.25443251693698254,
+            -0.120953388576317,
+            0.034646427574013726,
+            0.12647293107029517,
+            -0.17941338761307285
+          ],
+          "feature_names": [
+            "intercept",
+            "elo_side_gap",
+            "long_attack",
+            "opponent_defense_weakness",
+            "short_attack",
+            "opponent_short_defense_weakness",
+            "home_non_neutral",
+            "qualification",
+            "nations_league",
+            "world_cup",
+            "other_competitive"
+          ],
+          "ridge": 8.0
+        },
+        "home": null,
+        "away": null
       },
       "current_metrics": {
         "matches": 139,
@@ -4739,23 +4757,23 @@
       },
       "candidate_metrics": {
         "matches": 139,
-        "multiclass_brier": 0.6292433969753036,
-        "log_loss": 1.040813093022412,
+        "multiclass_brier": 0.6292451644551524,
+        "log_loss": 1.0407978098248343,
         "accuracy": 0.4316546762589928,
-        "mean_home_xg": 1.4003866698903196,
+        "mean_home_xg": 1.3987636753153332,
         "actual_home_goals": 1.5107913669064748,
-        "mean_away_xg": 1.0646023260200603,
+        "mean_away_xg": 1.0664692410891436,
         "actual_away_goals": 1.1366906474820144,
-        "home_goal_mae": 0.9731499451162714,
-        "away_goal_mae": 0.817187059142842,
-        "total_goal_error": -0.18249301847810928,
-        "goal_difference_error": -0.03831637555420109,
-        "poisson_deviance_per_team": 1.1302503800628272,
-        "mean_max_probability": 0.5327659120479036,
+        "home_goal_mae": 0.9725768111095222,
+        "away_goal_mae": 0.8173564268846473,
+        "total_goal_error": -0.18224909798401212,
+        "goal_difference_error": -0.04180628519827079,
+        "poisson_deviance_per_team": 1.1301456172478113,
+        "mean_max_probability": 0.5326667403313157,
         "predicted_class_rates": {
-          "home": 0.43729445520356647,
-          "draw": 0.25749455448540065,
-          "away": 0.3052109903110328
+          "home": 0.4366760651193986,
+          "draw": 0.25746333572943264,
+          "away": 0.30586059915116875
         },
         "actual_class_rates": {
           "home": 0.39568345323741005,
@@ -4797,11 +4815,11 @@
         },
         "goal_count_rates": {
           "predicted": {
-            "0": 0.3255550272749724,
-            "1": 0.3352511184491762,
-            "2": 0.19771541801113113,
-            "3": 0.08933275654314704,
-            "4_plus": 0.05214567972157342
+            "0": 0.3253967430948769,
+            "1": 0.3353167681776411,
+            "2": 0.19781900485677503,
+            "3": 0.08936786988219657,
+            "4_plus": 0.052099613988510145
           },
           "observed": {
             "0": 0.2805755395683453,
@@ -4813,11 +4831,11 @@
         },
         "goal_margin_rates": {
           "predicted": {
-            "underdog_by_2_plus": 0.07249024446467195,
-            "underdog_by_1": 0.14110440424587445,
-            "draw": 0.2498950622096447,
-            "favorite_by_1": 0.24290230570947352,
-            "favorite_by_2_plus": 0.293384140911752
+            "underdog_by_2_plus": 0.07255986919083504,
+            "underdog_by_1": 0.1411635108364204,
+            "draw": 0.2498969182605066,
+            "favorite_by_1": 0.24291374346348357,
+            "favorite_by_2_plus": 0.2932443367748462
           },
           "observed": {
             "underdog_by_2_plus": 0.02877697841726619,
@@ -4830,49 +4848,49 @@
         "segments": {
           "neutral": {
             "matches": 60,
-            "brier": 0.6209534804558107,
-            "log_loss": 1.0264799184057398
+            "brier": 0.6210519537802184,
+            "log_loss": 1.0266051517333794
           },
           "non_neutral": {
             "matches": 79,
-            "brier": 0.6355395361040325,
-            "log_loss": 1.0516990484274795
+            "brier": 0.6354678561070006,
+            "log_loss": 1.0515770438183432
           },
           "close_elo": {
             "matches": 52,
-            "brier": 0.6581080321956988,
-            "log_loss": 1.0842607515988436
+            "brier": 0.6581663157830303,
+            "log_loss": 1.0843786855081041
           },
           "moderate_elo": {
             "matches": 66,
-            "brier": 0.5914564325226052,
-            "log_loss": 0.9885688575596503
+            "brier": 0.5912948467077349,
+            "log_loss": 0.9883422051049245
           },
           "strong_favorite": {
             "matches": 21,
-            "brier": 0.6765280932809011,
-            "log_loss": 1.09742458323993
+            "brier": 0.6769033121827653,
+            "log_loss": 1.0977437324907366
           },
           "by_competition": {
             "continental_or_other_competitive": {
               "matches": 62,
-              "brier": 0.6640103675710441,
-              "log_loss": 1.091827504062594
+              "brier": 0.6640616810070188,
+              "log_loss": 1.0918624324149777
             },
             "friendly": {
               "matches": 33,
-              "brier": 0.5899275496211119,
-              "log_loss": 0.9883651556625717
+              "brier": 0.5895484301009866,
+              "log_loss": 0.9877261460260386
             },
             "nations_league": {
               "matches": 20,
-              "brier": 0.45038947149128833,
-              "log_loss": 0.7866469673997865
+              "brier": 0.4511341890235309,
+              "log_loss": 0.7875642183488485
             },
             "qualification": {
               "matches": 24,
-              "brier": 0.7425329509516669,
-              "log_loss": 1.1929468830572452
+              "brier": 0.7423113192928267,
+              "log_loss": 1.1928823987536261
             }
           },
           "confederation_matchup": null
@@ -5351,33 +5369,33 @@
       },
       "candidate_gate_metrics": {
         "matches": 139,
-        "multiclass_brier": 0.6292433969753036,
-        "log_loss": 1.040813093022412,
-        "poisson_deviance_per_team": 1.1302503800628272,
+        "multiclass_brier": 0.6292451644551524,
+        "log_loss": 1.0407978098248343,
+        "poisson_deviance_per_team": 1.1301456172478113,
         "accuracy": 0.4316546762589928,
         "class_brier": {
-          "home": 0.21257404322956774,
-          "draw": 0.22586739042316206,
-          "away": 0.19080196332257376
+          "home": 0.21251606452705352,
+          "draw": 0.22585141728193212,
+          "away": 0.19087768264616667
         },
-        "mean_probability_actual_class": 0.39464334751677305,
+        "mean_probability_actual_class": 0.39458495111747033,
         "predicted_class_frequencies": {
-          "home": 0.4372944552035665,
-          "draw": 0.25749455448540054,
-          "away": 0.30521099031103294
+          "home": 0.43667606511939866,
+          "draw": 0.25746333572943264,
+          "away": 0.30586059915116875
         },
         "actual_class_frequencies": {
           "home": 0.39568345323741005,
           "draw": 0.3381294964028777,
           "away": 0.26618705035971224
         },
-        "home_goal_mae": 0.9731499451162716,
-        "away_goal_mae": 0.8171870591428422,
-        "total_goal_mae": 1.3915589365657115,
-        "goal_difference_mae": 1.1850256212578287,
-        "home_goal_bias": -0.11040469701615536,
-        "away_goal_bias": -0.07208832146195396,
-        "total_goal_bias": -0.18249301847810945,
+        "home_goal_mae": 0.9725768111095224,
+        "away_goal_mae": 0.817356426884647,
+        "total_goal_mae": 1.3913755728278816,
+        "goal_difference_mae": 1.1847605686684946,
+        "home_goal_bias": -0.11202769159114169,
+        "away_goal_bias": -0.07022140639287087,
+        "total_goal_bias": -0.18224909798401245,
         "fixed_width_reliability": [
           {
             "class": "home",
@@ -5393,63 +5411,63 @@
             "lower": 0.1,
             "upper": 0.2,
             "count": 15,
-            "mean_probability": 0.15463933590419374,
+            "mean_probability": 0.15414066994573616,
             "observed_rate": 0.26666666666666666,
-            "absolute_gap": 0.11202733076247293
+            "absolute_gap": 0.1125259967209305
           },
           {
             "class": "home",
             "lower": 0.2,
             "upper": 0.3,
-            "count": 29,
-            "mean_probability": 0.25811784508968366,
-            "observed_rate": 0.1724137931034483,
-            "absolute_gap": 0.08570405198623537
+            "count": 30,
+            "mean_probability": 0.2590375646747145,
+            "observed_rate": 0.16666666666666666,
+            "absolute_gap": 0.09237089800804785
           },
           {
             "class": "home",
             "lower": 0.3,
             "upper": 0.4,
-            "count": 22,
-            "mean_probability": 0.3602908845587216,
-            "observed_rate": 0.45454545454545453,
-            "absolute_gap": 0.09425456998673293
+            "count": 21,
+            "mean_probability": 0.3623027263557054,
+            "observed_rate": 0.47619047619047616,
+            "absolute_gap": 0.11388774983477079
           },
           {
             "class": "home",
             "lower": 0.4,
             "upper": 0.5,
             "count": 16,
-            "mean_probability": 0.4350951351865248,
+            "mean_probability": 0.4345163740127272,
             "observed_rate": 0.1875,
-            "absolute_gap": 0.24759513518652482
+            "absolute_gap": 0.2470163740127272
           },
           {
             "class": "home",
             "lower": 0.5,
             "upper": 0.6,
             "count": 20,
-            "mean_probability": 0.5333511779212634,
+            "mean_probability": 0.5324984966442078,
             "observed_rate": 0.4,
-            "absolute_gap": 0.1333511779212634
+            "absolute_gap": 0.13249849664420776
           },
           {
             "class": "home",
             "lower": 0.6,
             "upper": 0.7,
             "count": 21,
-            "mean_probability": 0.6507341942635784,
+            "mean_probability": 0.6501035130305792,
             "observed_rate": 0.5714285714285714,
-            "absolute_gap": 0.07930562283500697
+            "absolute_gap": 0.07867494160200783
           },
           {
             "class": "home",
             "lower": 0.7,
             "upper": 0.8,
             "count": 16,
-            "mean_probability": 0.7349099041184577,
+            "mean_probability": 0.7344983198730719,
             "observed_rate": 0.8125,
-            "absolute_gap": 0.07759009588154231
+            "absolute_gap": 0.0780016801269281
           },
           {
             "class": "home",
@@ -5482,28 +5500,28 @@
             "class": "draw",
             "lower": 0.1,
             "upper": 0.2,
-            "count": 32,
-            "mean_probability": 0.18643774907956934,
-            "observed_rate": 0.21875,
-            "absolute_gap": 0.03231225092043066
+            "count": 33,
+            "mean_probability": 0.18688658903934105,
+            "observed_rate": 0.24242424242424243,
+            "absolute_gap": 0.05553765338490138
           },
           {
             "class": "draw",
             "lower": 0.2,
             "upper": 0.3,
-            "count": 72,
-            "mean_probability": 0.25430789736114917,
-            "observed_rate": 0.3472222222222222,
-            "absolute_gap": 0.09291432486107304
+            "count": 71,
+            "mean_probability": 0.25505259393860746,
+            "observed_rate": 0.3380281690140845,
+            "absolute_gap": 0.08297557507547704
           },
           {
             "class": "draw",
             "lower": 0.3,
             "upper": 0.4,
             "count": 35,
-            "mean_probability": 0.3290161855120495,
+            "mean_probability": 0.32889748738433555,
             "observed_rate": 0.42857142857142855,
-            "absolute_gap": 0.09955524305937907
+            "absolute_gap": 0.099673941187093
           },
           {
             "class": "draw",
@@ -5564,63 +5582,63 @@
             "lower": 0.0,
             "upper": 0.1,
             "count": 13,
-            "mean_probability": 0.07375101425738814,
+            "mean_probability": 0.07409202600444563,
             "observed_rate": 0.07692307692307693,
-            "absolute_gap": 0.003172062665688785
+            "absolute_gap": 0.0028310509186312977
           },
           {
             "class": "away",
             "lower": 0.1,
             "upper": 0.2,
-            "count": 34,
-            "mean_probability": 0.15263006100445395,
-            "observed_rate": 0.11764705882352941,
-            "absolute_gap": 0.03498300218092454
+            "count": 32,
+            "mean_probability": 0.15015431621523823,
+            "observed_rate": 0.125,
+            "absolute_gap": 0.025154316215238226
           },
           {
             "class": "away",
             "lower": 0.2,
             "upper": 0.3,
-            "count": 29,
-            "mean_probability": 0.24610649206458912,
-            "observed_rate": 0.3103448275862069,
-            "absolute_gap": 0.06423833552161778
+            "count": 31,
+            "mean_probability": 0.24375575191363164,
+            "observed_rate": 0.2903225806451613,
+            "absolute_gap": 0.046566828731529675
           },
           {
             "class": "away",
             "lower": 0.3,
             "upper": 0.4,
             "count": 25,
-            "mean_probability": 0.34567243507053697,
+            "mean_probability": 0.346380897664463,
             "observed_rate": 0.32,
-            "absolute_gap": 0.02567243507053696
+            "absolute_gap": 0.026380897664463
           },
           {
             "class": "away",
             "lower": 0.4,
             "upper": 0.5,
             "count": 17,
-            "mean_probability": 0.4561926546952156,
+            "mean_probability": 0.457068952722878,
             "observed_rate": 0.29411764705882354,
-            "absolute_gap": 0.16207500763639204
+            "absolute_gap": 0.16295130566405447
           },
           {
             "class": "away",
             "lower": 0.5,
             "upper": 0.6,
             "count": 9,
-            "mean_probability": 0.5437994175899644,
+            "mean_probability": 0.544880089470657,
             "observed_rate": 0.6666666666666666,
-            "absolute_gap": 0.12286724907670221
+            "absolute_gap": 0.1217865771960096
           },
           {
             "class": "away",
             "lower": 0.6,
             "upper": 0.7,
             "count": 12,
-            "mean_probability": 0.6539811132476027,
+            "mean_probability": 0.6547037560506707,
             "observed_rate": 0.3333333333333333,
-            "absolute_gap": 0.32064777991426935
+            "absolute_gap": 0.32137042271733735
           },
           {
             "class": "away",
@@ -5653,162 +5671,162 @@
         "adaptive_reliability": [
           {
             "class": "home",
-            "lower": 0.1090332701371018,
-            "upper": 0.27889415072000984,
+            "lower": 0.10889087543562403,
+            "upper": 0.27749334202800774,
             "count": 34,
-            "mean_probability": 0.2026790253247465,
+            "mean_probability": 0.2021073028426687,
             "observed_rate": 0.23529411764705882,
-            "absolute_gap": 0.03261509232231233
+            "absolute_gap": 0.03318681480439012
           },
           {
             "class": "home",
-            "lower": 0.28157610521973164,
-            "upper": 0.40441985240141276,
+            "lower": 0.2816472215433928,
+            "upper": 0.4029691052372211,
             "count": 35,
-            "mean_probability": 0.34431249664432684,
+            "mean_probability": 0.343603787431651,
             "observed_rate": 0.37142857142857144,
-            "absolute_gap": 0.027116074784244604
+            "absolute_gap": 0.027824783996920455
           },
           {
             "class": "home",
-            "lower": 0.408286682604016,
-            "upper": 0.6067385630863934,
+            "lower": 0.4085104997383623,
+            "upper": 0.6053012736864994,
             "count": 35,
-            "mean_probability": 0.5036584972521159,
+            "mean_probability": 0.5030054523415861,
             "observed_rate": 0.2857142857142857,
-            "absolute_gap": 0.21794421153783017
+            "absolute_gap": 0.2172911666273004
           },
           {
             "class": "home",
-            "lower": 0.6113201080671131,
-            "upper": 0.7644286579242202,
+            "lower": 0.6101582094670068,
+            "upper": 0.7640522875345888,
             "count": 35,
-            "mean_probability": 0.6918245035965388,
+            "mean_probability": 0.6912857532252106,
             "observed_rate": 0.6857142857142857,
-            "absolute_gap": 0.006110217882253077
+            "absolute_gap": 0.005571467510924855
           },
           {
             "class": "draw",
             "lower": 0.185,
-            "upper": 0.20196956818628875,
+            "upper": 0.20157193526468403,
             "count": 34,
-            "mean_probability": 0.1873010827495235,
+            "mean_probability": 0.1873185109871453,
             "observed_rate": 0.23529411764705882,
-            "absolute_gap": 0.047993034897535314
+            "absolute_gap": 0.04797560665991352
           },
           {
             "class": "draw",
-            "lower": 0.20308343279891938,
-            "upper": 0.25938309300833956,
+            "lower": 0.20268414774975685,
+            "upper": 0.259521175728197,
             "count": 35,
-            "mean_probability": 0.23277268103362347,
+            "mean_probability": 0.23277797148993226,
             "observed_rate": 0.2857142857142857,
-            "absolute_gap": 0.052941604680662224
+            "absolute_gap": 0.05293631422435344
           },
           {
             "class": "draw",
-            "lower": 0.2605641425945386,
-            "upper": 0.2992329098984359,
+            "lower": 0.2609047591479485,
+            "upper": 0.29896975202766973,
             "count": 35,
-            "mean_probability": 0.27888274088252407,
+            "mean_probability": 0.27885523520653777,
             "observed_rate": 0.4,
-            "absolute_gap": 0.12111725911747595
+            "absolute_gap": 0.12114476479346226
           },
           {
             "class": "draw",
-            "lower": 0.30258834619367003,
-            "upper": 0.3982033498038681,
+            "lower": 0.3026948090146293,
+            "upper": 0.3979674528198804,
             "count": 35,
-            "mean_probability": 0.3290161855120495,
+            "mean_probability": 0.32889748738433555,
             "observed_rate": 0.42857142857142855,
-            "absolute_gap": 0.09955524305937907
+            "absolute_gap": 0.099673941187093
           },
           {
             "class": "away",
-            "lower": 0.05057134207577968,
-            "upper": 0.15661991380346224,
+            "lower": 0.05094771246541118,
+            "upper": 0.15646400676831476,
             "count": 34,
-            "mean_probability": 0.11077203133315569,
+            "mean_probability": 0.11120482201213455,
             "observed_rate": 0.08823529411764706,
-            "absolute_gap": 0.022536737215508626
+            "absolute_gap": 0.022969527894487488
           },
           {
             "class": "away",
-            "lower": 0.15777743025942392,
-            "upper": 0.2707504958582849,
+            "lower": 0.15856080982118145,
+            "upper": 0.271900418737054,
             "count": 35,
-            "mean_probability": 0.21511836453347172,
+            "mean_probability": 0.21568906363414755,
             "observed_rate": 0.2857142857142857,
-            "absolute_gap": 0.07059592118081398
+            "absolute_gap": 0.07002522208013814
           },
           {
             "class": "away",
-            "lower": 0.2762319276621917,
-            "upper": 0.41906530922522794,
+            "lower": 0.27626792635274094,
+            "upper": 0.41932344913169756,
             "count": 35,
-            "mean_probability": 0.33962066914316713,
+            "mean_probability": 0.34027935405633325,
             "observed_rate": 0.2857142857142857,
-            "absolute_gap": 0.05390638342888143
+            "absolute_gap": 0.05456506834204755
           },
           {
             "class": "away",
-            "lower": 0.42124937945312063,
-            "upper": 0.6988240518632887,
+            "lower": 0.42275909736553113,
+            "upper": 0.6990517860479369,
             "count": 35,
-            "mean_probability": 0.5497774974063975,
+            "mean_probability": 0.550707563269516,
             "observed_rate": 0.4,
-            "absolute_gap": 0.14977749740639745
+            "absolute_gap": 0.15070756326951595
           }
         ],
         "calibration": {
-          "expected_calibration_error": 0.0921518597038388,
-          "maximum_calibration_error": 0.32064777991426935,
+          "expected_calibration_error": 0.09168638110488044,
+          "maximum_calibration_error": 0.32137042271733735,
           "maximum_calibration_error_bucket": {
             "class": "away",
             "lower": 0.6,
             "upper": 0.7,
             "count": 12,
-            "mean_probability": 0.6539811132476027,
+            "mean_probability": 0.6547037560506707,
             "observed_rate": 0.3333333333333333,
-            "absolute_gap": 0.32064777991426935
+            "absolute_gap": 0.32137042271733735
           },
           "support_aware_minimum_count": 30,
-          "support_aware_maximum_calibration_error": 0.09955524305937907
+          "support_aware_maximum_calibration_error": 0.099673941187093
         },
         "confidence_buckets": {
           "below_40": {
             "count": 28,
-            "mean_predicted_favorite_probability": 0.3751677235971031,
+            "mean_predicted_favorite_probability": 0.3751342865436032,
             "observed_favorite_win_rate": 0.32142857142857145,
-            "absolute_calibration_gap": 0.053739152168531645,
+            "absolute_calibration_gap": 0.05370571511503175,
             "error_rate": 0.6785714285714286
           },
           "40_50": {
             "count": 33,
-            "mean_predicted_favorite_probability": 0.4459635543273655,
+            "mean_predicted_favorite_probability": 0.44613436910583515,
             "observed_favorite_win_rate": 0.24242424242424243,
-            "absolute_calibration_gap": 0.20353931190312308,
+            "absolute_calibration_gap": 0.20371012668159272,
             "error_rate": 0.7575757575757576
           },
           "50_60": {
             "count": 29,
-            "mean_predicted_favorite_probability": 0.5365937350598258,
+            "mean_predicted_favorite_probability": 0.5363410599351749,
             "observed_favorite_win_rate": 0.4827586206896552,
-            "absolute_calibration_gap": 0.05383511437017058,
+            "absolute_calibration_gap": 0.0535824392455197,
             "error_rate": 0.5172413793103448
           },
           "60_70": {
             "count": 33,
-            "mean_predicted_favorite_probability": 0.6519148920759508,
+            "mean_predicted_favorite_probability": 0.6517763286742487,
             "observed_favorite_win_rate": 0.48484848484848486,
-            "absolute_calibration_gap": 0.1670664072274659,
+            "absolute_calibration_gap": 0.16692784382576387,
             "error_rate": 0.5151515151515151
           },
           "70_80": {
             "count": 16,
-            "mean_predicted_favorite_probability": 0.7349099041184577,
+            "mean_predicted_favorite_probability": 0.7344983198730719,
             "observed_favorite_win_rate": 0.8125,
-            "absolute_calibration_gap": 0.07759009588154231,
+            "absolute_calibration_gap": 0.0780016801269281,
             "error_rate": 0.1875
           },
           "above_80": {
@@ -6539,114 +6557,114 @@
     },
     "candidate": {
       "matches": 392,
-      "multiclass_brier": 0.5993415578141942,
-      "log_loss": 1.0018730121842727,
-      "poisson_deviance_per_team": 1.1494607117200089,
+      "multiclass_brier": 0.5993607091734111,
+      "log_loss": 1.001892151467883,
+      "poisson_deviance_per_team": 1.149540443585598,
       "accuracy": 0.4897959183673469,
       "class_brier": {
-        "home": 0.2143591202172143,
-        "draw": 0.19203602828965521,
-        "away": 0.19294640930732432
+        "home": 0.2143564467749408,
+        "draw": 0.19204361139578158,
+        "away": 0.19296065100268836
       },
-      "mean_probability_actual_class": 0.40611646359413883,
+      "mean_probability_actual_class": 0.4060602996563741,
       "predicted_class_frequencies": {
-        "home": 0.4358209868360879,
-        "draw": 0.25684566420492255,
-        "away": 0.30733334895899017
+        "home": 0.4350406789585566,
+        "draw": 0.2568129444247687,
+        "away": 0.3081463766166751
       },
       "actual_class_frequencies": {
         "home": 0.44387755102040816,
         "draw": 0.26785714285714285,
         "away": 0.288265306122449
       },
-      "home_goal_mae": 0.9985893621871832,
-      "away_goal_mae": 0.8296691614114129,
-      "total_goal_mae": 1.3359183169502327,
-      "goal_difference_mae": 1.291041724412415,
-      "home_goal_bias": -0.14616442566852234,
-      "away_goal_bias": -0.007598165215830421,
-      "total_goal_bias": -0.1537625908843528,
+      "home_goal_mae": 0.9983803524491784,
+      "away_goal_mae": 0.8299912487498546,
+      "total_goal_mae": 1.3360949741631556,
+      "goal_difference_mae": 1.2909701761547105,
+      "home_goal_bias": -0.14813881319778827,
+      "away_goal_bias": -0.005388906979307821,
+      "total_goal_bias": -0.15352772017709604,
       "fixed_width_reliability": [
         {
           "class": "home",
           "lower": 0.0,
           "upper": 0.1,
           "count": 2,
-          "mean_probability": 0.08903717911339487,
+          "mean_probability": 0.08788758069086075,
           "observed_rate": 0.0,
-          "absolute_gap": 0.08903717911339487
+          "absolute_gap": 0.08788758069086075
         },
         {
           "class": "home",
           "lower": 0.1,
           "upper": 0.2,
-          "count": 31,
-          "mean_probability": 0.165043983786383,
-          "observed_rate": 0.2903225806451613,
-          "absolute_gap": 0.12527859685877832
+          "count": 32,
+          "mean_probability": 0.16545885331725363,
+          "observed_rate": 0.28125,
+          "absolute_gap": 0.11579114668274637
         },
         {
           "class": "home",
           "lower": 0.2,
           "upper": 0.3,
           "count": 78,
-          "mean_probability": 0.2511740592404006,
+          "mean_probability": 0.2517068433000838,
           "observed_rate": 0.24358974358974358,
-          "absolute_gap": 0.007584315650657009
+          "absolute_gap": 0.00811709971034022
         },
         {
           "class": "home",
           "lower": 0.3,
           "upper": 0.4,
-          "count": 73,
-          "mean_probability": 0.3555106563982365,
-          "observed_rate": 0.3835616438356164,
-          "absolute_gap": 0.028050987437379937
+          "count": 72,
+          "mean_probability": 0.3553427944501621,
+          "observed_rate": 0.3888888888888889,
+          "absolute_gap": 0.0335460944387268
         },
         {
           "class": "home",
           "lower": 0.4,
           "upper": 0.5,
           "count": 63,
-          "mean_probability": 0.44367334148232646,
+          "mean_probability": 0.4428740602365695,
           "observed_rate": 0.3333333333333333,
-          "absolute_gap": 0.11034000814899314
+          "absolute_gap": 0.10954072690323619
         },
         {
           "class": "home",
           "lower": 0.5,
           "upper": 0.6,
           "count": 53,
-          "mean_probability": 0.5441568008760942,
+          "mean_probability": 0.5431067571335279,
           "observed_rate": 0.5283018867924528,
-          "absolute_gap": 0.01585491408364137
+          "absolute_gap": 0.014804870341075027
         },
         {
           "class": "home",
           "lower": 0.6,
           "upper": 0.7,
           "count": 54,
-          "mean_probability": 0.6543157457678933,
+          "mean_probability": 0.6537132011323812,
           "observed_rate": 0.7222222222222222,
-          "absolute_gap": 0.0679064764543289
+          "absolute_gap": 0.06850902108984103
         },
         {
           "class": "home",
           "lower": 0.7,
           "upper": 0.8,
           "count": 37,
-          "mean_probability": 0.7317839056814546,
+          "mean_probability": 0.7313194420220914,
           "observed_rate": 0.7837837837837838,
-          "absolute_gap": 0.0519998781023292
+          "absolute_gap": 0.052464341761692346
         },
         {
           "class": "home",
           "lower": 0.8,
           "upper": 0.9,
           "count": 1,
-          "mean_probability": 0.8027487048195534,
+          "mean_probability": 0.8026165674551939,
           "observed_rate": 1.0,
-          "absolute_gap": 0.1972512951804466
+          "absolute_gap": 0.19738343254480606
         },
         {
           "class": "home",
@@ -6670,28 +6688,28 @@
           "class": "draw",
           "lower": 0.1,
           "upper": 0.2,
-          "count": 88,
-          "mean_probability": 0.18665439593909697,
-          "observed_rate": 0.17045454545454544,
-          "absolute_gap": 0.016199850484551526
+          "count": 90,
+          "mean_probability": 0.18697773952281074,
+          "observed_rate": 0.18888888888888888,
+          "absolute_gap": 0.001911149366078141
         },
         {
           "class": "draw",
           "lower": 0.2,
           "upper": 0.3,
-          "count": 202,
-          "mean_probability": 0.2536224584128782,
-          "observed_rate": 0.2623762376237624,
-          "absolute_gap": 0.00875377921088416
+          "count": 200,
+          "mean_probability": 0.2541239265385221,
+          "observed_rate": 0.255,
+          "absolute_gap": 0.0008760734614778887
         },
         {
           "class": "draw",
           "lower": 0.3,
           "upper": 0.4,
           "count": 102,
-          "mean_probability": 0.32378604829693647,
+          "mean_probability": 0.3237048269583512,
           "observed_rate": 0.3627450980392157,
-          "absolute_gap": 0.038959049742279206
+          "absolute_gap": 0.0390402710808645
         },
         {
           "class": "draw",
@@ -6752,72 +6770,72 @@
           "lower": 0.0,
           "upper": 0.1,
           "count": 27,
-          "mean_probability": 0.0708353977774714,
+          "mean_probability": 0.07122111134130525,
           "observed_rate": 0.07407407407407407,
-          "absolute_gap": 0.003238676296602669
+          "absolute_gap": 0.0028529627327688184
         },
         {
           "class": "away",
           "lower": 0.1,
           "upper": 0.2,
-          "count": 93,
-          "mean_probability": 0.15248880847880683,
-          "observed_rate": 0.11827956989247312,
-          "absolute_gap": 0.03420923858633371
+          "count": 91,
+          "mean_probability": 0.15202697369855803,
+          "observed_rate": 0.12087912087912088,
+          "absolute_gap": 0.031147852819437147
         },
         {
           "class": "away",
           "lower": 0.2,
           "upper": 0.3,
-          "count": 96,
-          "mean_probability": 0.25215629632218844,
-          "observed_rate": 0.3020833333333333,
-          "absolute_gap": 0.04992703701114487
+          "count": 97,
+          "mean_probability": 0.2512684495040463,
+          "observed_rate": 0.28865979381443296,
+          "absolute_gap": 0.037391344310386654
         },
         {
           "class": "away",
           "lower": 0.3,
           "upper": 0.4,
-          "count": 73,
-          "mean_probability": 0.34604236752017753,
-          "observed_rate": 0.3561643835616438,
-          "absolute_gap": 0.010122016041466286
+          "count": 72,
+          "mean_probability": 0.3448711469181616,
+          "observed_rate": 0.375,
+          "absolute_gap": 0.03012885308183838
         },
         {
           "class": "away",
           "lower": 0.4,
           "upper": 0.5,
-          "count": 43,
-          "mean_probability": 0.4520606745471048,
-          "observed_rate": 0.37209302325581395,
-          "absolute_gap": 0.07996765129129085
+          "count": 45,
+          "mean_probability": 0.4507373773764836,
+          "observed_rate": 0.35555555555555557,
+          "absolute_gap": 0.09518182182092805
         },
         {
           "class": "away",
           "lower": 0.5,
           "upper": 0.6,
           "count": 34,
-          "mean_probability": 0.5468191949196395,
+          "mean_probability": 0.5482585546177264,
           "observed_rate": 0.5882352941176471,
-          "absolute_gap": 0.041416099198007594
+          "absolute_gap": 0.039976739499920644
         },
         {
           "class": "away",
           "lower": 0.6,
           "upper": 0.7,
           "count": 24,
-          "mean_probability": 0.6429238880389121,
+          "mean_probability": 0.6439164651412413,
           "observed_rate": 0.2916666666666667,
-          "absolute_gap": 0.3512572213722454
+          "absolute_gap": 0.35224979847457466
         },
         {
           "class": "away",
           "lower": 0.7,
           "upper": 0.8,
           "count": 2,
-          "mean_probability": 0.725962820886605,
+          "mean_probability": 0.7271124193091392,
           "observed_rate": 1.0,
-          "absolute_gap": 0.274037179113395
+          "absolute_gap": 0.27288758069086083
         },
         {
           "class": "away",
@@ -6841,120 +6859,120 @@
       "adaptive_reliability": [
         {
           "class": "home",
-          "lower": 0.08067769894145796,
-          "upper": 0.19343984317717247,
+          "lower": 0.07959039592785437,
+          "upper": 0.1933645889743466,
           "count": 30,
-          "mean_probability": 0.1568162574507204,
+          "mean_probability": 0.1561165194192666,
           "observed_rate": 0.3,
-          "absolute_gap": 0.1431837425492796
+          "absolute_gap": 0.14388348058073339
         },
         {
           "class": "home",
-          "lower": 0.19457129191837444,
-          "upper": 0.23287299205686118,
+          "lower": 0.19444309137676027,
+          "upper": 0.23200741840948821,
           "count": 30,
-          "mean_probability": 0.21689653886435525,
+          "mean_probability": 0.2160099466240339,
           "observed_rate": 0.13333333333333333,
-          "absolute_gap": 0.08356320553102192
+          "absolute_gap": 0.08267661329070056
         },
         {
           "class": "home",
-          "lower": 0.23532273989756816,
-          "upper": 0.2771176783499071,
+          "lower": 0.23528847632717764,
+          "upper": 0.2752560638432042,
           "count": 30,
-          "mean_probability": 0.25459026511203664,
+          "mean_probability": 0.2539255890801419,
           "observed_rate": 0.36666666666666664,
-          "absolute_gap": 0.11207640155463
+          "absolute_gap": 0.11274107758652474
         },
         {
           "class": "home",
-          "lower": 0.27788435956444546,
-          "upper": 0.3162837964381626,
+          "lower": 0.27602046251401113,
+          "upper": 0.31475845937742764,
           "count": 30,
-          "mean_probability": 0.29363406707975853,
+          "mean_probability": 0.29289671285142155,
           "observed_rate": 0.2,
-          "absolute_gap": 0.09363406707975852
+          "absolute_gap": 0.09289671285142154
         },
         {
           "class": "home",
-          "lower": 0.3166687184370838,
-          "upper": 0.36155899338428565,
+          "lower": 0.3163802937915543,
+          "upper": 0.3616106530604818,
           "count": 30,
-          "mean_probability": 0.33956348266801956,
+          "mean_probability": 0.33838085703657694,
           "observed_rate": 0.4666666666666667,
-          "absolute_gap": 0.12710318399864712
+          "absolute_gap": 0.12828580963008973
         },
         {
           "class": "home",
-          "lower": 0.36286120926332266,
-          "upper": 0.39763490338108604,
+          "lower": 0.36215699107405913,
+          "upper": 0.39666793330764455,
           "count": 30,
-          "mean_probability": 0.3798814908496218,
-          "observed_rate": 0.3333333333333333,
-          "absolute_gap": 0.04654815751628849
+          "mean_probability": 0.3791722501292995,
+          "observed_rate": 0.3,
+          "absolute_gap": 0.07917225012929952
         },
         {
           "class": "home",
-          "lower": 0.3985799224714943,
-          "upper": 0.4293263887900869,
+          "lower": 0.39783080637201546,
+          "upper": 0.42974381677417534,
           "count": 31,
-          "mean_probability": 0.411537760094028,
-          "observed_rate": 0.45161290322580644,
-          "absolute_gap": 0.04007514313177846
+          "mean_probability": 0.4106241656264341,
+          "observed_rate": 0.4838709677419355,
+          "absolute_gap": 0.07324680211550139
         },
         {
           "class": "home",
-          "lower": 0.4319353582203918,
-          "upper": 0.4891599137107669,
+          "lower": 0.43070736777780283,
+          "upper": 0.48936169926503165,
           "count": 30,
-          "mean_probability": 0.4610432611189918,
+          "mean_probability": 0.4601930594305395,
           "observed_rate": 0.23333333333333334,
-          "absolute_gap": 0.22770992778565846
+          "absolute_gap": 0.22685972609720617
         },
         {
           "class": "home",
-          "lower": 0.4895507139498529,
-          "upper": 0.5372260967499757,
+          "lower": 0.48989249030927623,
+          "upper": 0.5358329875695006,
           "count": 30,
-          "mean_probability": 0.512764280760495,
+          "mean_probability": 0.5120032713088037,
           "observed_rate": 0.4,
-          "absolute_gap": 0.11276428076049494
+          "absolute_gap": 0.11200327130880372
         },
         {
           "class": "home",
-          "lower": 0.5409818566691074,
-          "upper": 0.6021105316037576,
+          "lower": 0.5394949762382893,
+          "upper": 0.6004819582881485,
           "count": 30,
-          "mean_probability": 0.5672924668271888,
+          "mean_probability": 0.5661394671933035,
           "observed_rate": 0.6333333333333333,
-          "absolute_gap": 0.06604086650614449
+          "absolute_gap": 0.06719386614002976
         },
         {
           "class": "home",
-          "lower": 0.6022499690094879,
-          "upper": 0.6680667957615004,
+          "lower": 0.6024724176840544,
+          "upper": 0.6689117997768883,
           "count": 30,
-          "mean_probability": 0.6331265934931667,
+          "mean_probability": 0.6325536479199744,
           "observed_rate": 0.6666666666666666,
-          "absolute_gap": 0.03354007317349994
+          "absolute_gap": 0.03411301874669226
         },
         {
           "class": "home",
-          "lower": 0.6688646381134238,
-          "upper": 0.7083111471788048,
+          "lower": 0.6697135466605022,
+          "upper": 0.7080167507195605,
           "count": 30,
-          "mean_probability": 0.689270243919317,
+          "mean_probability": 0.6886749220786311,
           "observed_rate": 0.8,
-          "absolute_gap": 0.11072975608068303
+          "absolute_gap": 0.11132507792136892
         },
         {
           "class": "home",
-          "lower": 0.7089612295431259,
-          "upper": 0.8027487048195534,
+          "lower": 0.7085945903266159,
+          "upper": 0.8026165674551939,
           "count": 31,
-          "mean_probability": 0.7399286397587533,
+          "mean_probability": 0.7395035395217696,
           "observed_rate": 0.7741935483870968,
-          "absolute_gap": 0.034264908628343416
+          "absolute_gap": 0.03469000886532714
         },
         {
           "class": "draw",
@@ -6977,285 +6995,285 @@
         {
           "class": "draw",
           "lower": 0.185,
-          "upper": 0.20025339407426856,
+          "upper": 0.19989052421520118,
           "count": 30,
-          "mean_probability": 0.19086899372803237,
-          "observed_rate": 0.5,
-          "absolute_gap": 0.30913100627196766
+          "mean_probability": 0.1909332185684322,
+          "observed_rate": 0.5333333333333333,
+          "absolute_gap": 0.3424001147649011
         },
         {
           "class": "draw",
-          "lower": 0.20025927475128893,
-          "upper": 0.21679423397349867,
+          "lower": 0.20062965539361846,
+          "upper": 0.21712062497232493,
           "count": 30,
-          "mean_probability": 0.20822164394625547,
+          "mean_probability": 0.2080225899680814,
           "observed_rate": 0.23333333333333334,
-          "absolute_gap": 0.025111689387077862
+          "absolute_gap": 0.025310743365251936
         },
         {
           "class": "draw",
-          "lower": 0.21746579145197023,
-          "upper": 0.23728331205726766,
+          "lower": 0.21733633887592232,
+          "upper": 0.23712681368976618,
           "count": 30,
-          "mean_probability": 0.22727740232050883,
+          "mean_probability": 0.22724597752733222,
           "observed_rate": 0.16666666666666666,
-          "absolute_gap": 0.060610735653842174
+          "absolute_gap": 0.060579310860665564
         },
         {
           "class": "draw",
-          "lower": 0.23736382066455458,
-          "upper": 0.25404274986721237,
+          "lower": 0.23752838271990973,
+          "upper": 0.25420883708169234,
           "count": 30,
-          "mean_probability": 0.24503604174548332,
-          "observed_rate": 0.26666666666666666,
-          "absolute_gap": 0.02163062492118334
+          "mean_probability": 0.24507720105295192,
+          "observed_rate": 0.2,
+          "absolute_gap": 0.045077201052951904
         },
         {
           "class": "draw",
-          "lower": 0.25439841007790565,
-          "upper": 0.26602057188645156,
+          "lower": 0.25425909749840736,
+          "upper": 0.26553667151634464,
           "count": 31,
-          "mean_probability": 0.2596118853755795,
-          "observed_rate": 0.16129032258064516,
-          "absolute_gap": 0.09832156279493434
+          "mean_probability": 0.2597212626568935,
+          "observed_rate": 0.1935483870967742,
+          "absolute_gap": 0.0661728755601193
         },
         {
           "class": "draw",
-          "lower": 0.26700173139058786,
-          "upper": 0.2804943821491402,
+          "lower": 0.26695922347477347,
+          "upper": 0.28024934171934535,
           "count": 30,
-          "mean_probability": 0.2727966354466994,
+          "mean_probability": 0.2728004684703683,
           "observed_rate": 0.43333333333333335,
-          "absolute_gap": 0.16053669788663394
+          "absolute_gap": 0.16053286486296503
         },
         {
           "class": "draw",
-          "lower": 0.2805155863267525,
-          "upper": 0.29086807616979277,
+          "lower": 0.28038500505710645,
+          "upper": 0.2904193999914026,
           "count": 30,
-          "mean_probability": 0.2849981088252268,
+          "mean_probability": 0.2848925819902536,
           "observed_rate": 0.2,
-          "absolute_gap": 0.08499810882522679
+          "absolute_gap": 0.08489258199025357
         },
         {
           "class": "draw",
-          "lower": 0.29168652610678375,
-          "upper": 0.30396028651088847,
+          "lower": 0.2917259972641773,
+          "upper": 0.3035349921236652,
           "count": 30,
-          "mean_probability": 0.29865446885373526,
+          "mean_probability": 0.2986274761813161,
           "observed_rate": 0.4666666666666667,
-          "absolute_gap": 0.16801219781293142
+          "absolute_gap": 0.1680391904853506
         },
         {
           "class": "draw",
-          "lower": 0.30435983739237993,
-          "upper": 0.31381566066351396,
+          "lower": 0.30418894239515737,
+          "upper": 0.313653424925936,
           "count": 30,
-          "mean_probability": 0.30853663156536265,
+          "mean_probability": 0.30849050539715966,
           "observed_rate": 0.4,
-          "absolute_gap": 0.09146336843463737
+          "absolute_gap": 0.09150949460284036
         },
         {
           "class": "draw",
-          "lower": 0.31424540043762467,
-          "upper": 0.33036473713839976,
+          "lower": 0.31378728620737834,
+          "upper": 0.3299612995518969,
           "count": 30,
-          "mean_probability": 0.32067919248155985,
+          "mean_probability": 0.3206375675503426,
           "observed_rate": 0.26666666666666666,
-          "absolute_gap": 0.054012525814893186
+          "absolute_gap": 0.053970900883675954
         },
         {
           "class": "draw",
-          "lower": 0.3306205573418834,
-          "upper": 0.3982033498038681,
+          "lower": 0.3308246233751968,
+          "upper": 0.3979674528198804,
           "count": 31,
-          "mean_probability": 0.3491438178806646,
+          "mean_probability": 0.3489512087405929,
           "observed_rate": 0.3548387096774194,
-          "absolute_gap": 0.005694891796754753
+          "absolute_gap": 0.005887500936826495
         },
         {
           "class": "away",
-          "lower": 0.012251295180446497,
-          "upper": 0.10185702032312192,
+          "lower": 0.012383432544806025,
+          "upper": 0.10170405694704376,
           "count": 30,
-          "mean_probability": 0.07383619586033155,
+          "mean_probability": 0.07419727958857196,
           "observed_rate": 0.06666666666666667,
-          "absolute_gap": 0.007169529193664884
+          "absolute_gap": 0.007530612921905294
         },
         {
           "class": "away",
-          "lower": 0.10384335512901896,
-          "upper": 0.13821921262932108,
+          "lower": 0.10453317654654463,
+          "upper": 0.137962667347919,
           "count": 30,
-          "mean_probability": 0.12066381744771192,
+          "mean_probability": 0.12120047119243088,
           "observed_rate": 0.13333333333333333,
-          "absolute_gap": 0.012669515885621416
+          "absolute_gap": 0.01213286214090245
         },
         {
           "class": "away",
-          "lower": 0.1382790072420841,
-          "upper": 0.17081918764512596,
+          "lower": 0.13927453035898552,
+          "upper": 0.17149000720465438,
           "count": 30,
-          "mean_probability": 0.15389638336028694,
+          "mean_probability": 0.15449779296770214,
           "observed_rate": 0.1,
-          "absolute_gap": 0.05389638336028693
+          "absolute_gap": 0.05449779296770213
         },
         {
           "class": "away",
-          "lower": 0.17136366956594784,
-          "upper": 0.199951367545709,
+          "lower": 0.17243913858771695,
+          "upper": 0.20042242125815468,
           "count": 30,
-          "mean_probability": 0.18807076761569488,
+          "mean_probability": 0.1886993631919286,
           "observed_rate": 0.13333333333333333,
-          "absolute_gap": 0.05473743428236155
+          "absolute_gap": 0.05536602985859526
         },
         {
           "class": "away",
-          "lower": 0.20008699562513182,
-          "upper": 0.23713412938476472,
+          "lower": 0.20090536014907318,
+          "upper": 0.23696704554325207,
           "count": 30,
-          "mean_probability": 0.2188251834682937,
+          "mean_probability": 0.21939320795518835,
           "observed_rate": 0.3,
-          "absolute_gap": 0.0811748165317063
+          "absolute_gap": 0.08060679204481164
         },
         {
           "class": "away",
-          "lower": 0.23721677884335068,
-          "upper": 0.2594405340492545,
+          "lower": 0.2370931279788873,
+          "upper": 0.2609725214616123,
           "count": 30,
-          "mean_probability": 0.2481734435675912,
+          "mean_probability": 0.2488582987110008,
           "observed_rate": 0.2,
-          "absolute_gap": 0.04817344356759118
+          "absolute_gap": 0.04885829871100078
         },
         {
           "class": "away",
-          "lower": 0.2616739782989907,
-          "upper": 0.2963429783953165,
+          "lower": 0.26164870663359635,
+          "upper": 0.29682010247354595,
           "count": 31,
-          "mean_probability": 0.28090767241239195,
+          "mean_probability": 0.2816857504042533,
           "observed_rate": 0.3870967741935484,
-          "absolute_gap": 0.10618910178115643
+          "absolute_gap": 0.10541102378929507
         },
         {
           "class": "away",
-          "lower": 0.29667846253146235,
-          "upper": 0.3280824267928301,
+          "lower": 0.29689662206259243,
+          "upper": 0.329347944765246,
           "count": 30,
-          "mean_probability": 0.3130487650816416,
+          "mean_probability": 0.313961884040735,
           "observed_rate": 0.4,
-          "absolute_gap": 0.08695123491835843
+          "absolute_gap": 0.08603811595926503
         },
         {
           "class": "away",
-          "lower": 0.3297235813706225,
-          "upper": 0.37176951955349236,
+          "lower": 0.3312695471772606,
+          "upper": 0.3734322301473111,
           "count": 30,
-          "mean_probability": 0.3488117045516693,
+          "mean_probability": 0.3496745746895334,
           "observed_rate": 0.3,
-          "absolute_gap": 0.04881170455166933
+          "absolute_gap": 0.0496745746895334
         },
         {
           "class": "away",
-          "lower": 0.3741232886124688,
-          "upper": 0.4293866274101568,
+          "lower": 0.3743609062065503,
+          "upper": 0.43115418556963675,
           "count": 30,
-          "mean_probability": 0.39636612719805453,
+          "mean_probability": 0.39743262321167383,
           "observed_rate": 0.4,
-          "absolute_gap": 0.0036338728019454924
+          "absolute_gap": 0.002567376788326192
         },
         {
           "class": "away",
-          "lower": 0.43723189321094685,
-          "upper": 0.49759396041179327,
+          "lower": 0.43765080404932954,
+          "upper": 0.4981760559285144,
           "count": 30,
-          "mean_probability": 0.46478747966246464,
+          "mean_probability": 0.46586898076521777,
           "observed_rate": 0.36666666666666664,
-          "absolute_gap": 0.098120812995798
+          "absolute_gap": 0.09920231409855113
         },
         {
           "class": "away",
-          "lower": 0.4981873307529489,
-          "upper": 0.5772694780214007,
+          "lower": 0.49857622277458075,
+          "upper": 0.5791781584010254,
           "count": 30,
-          "mean_probability": 0.5378373666824418,
+          "mean_probability": 0.5391297744168587,
           "observed_rate": 0.6333333333333333,
-          "absolute_gap": 0.09549596665089155
+          "absolute_gap": 0.09420355891647458
         },
         {
           "class": "away",
-          "lower": 0.5816390618380975,
-          "upper": 0.7343223010585419,
+          "lower": 0.5840261490718026,
+          "upper": 0.7354096040721456,
           "count": 31,
-          "mean_probability": 0.6399038036211139,
+          "mean_probability": 0.6410868983638578,
           "observed_rate": 0.3225806451612903,
-          "absolute_gap": 0.31732315845982356
+          "absolute_gap": 0.3185062532025675
         }
       ],
       "calibration": {
-        "expected_calibration_error": 0.042580289606167665,
-        "maximum_calibration_error": 0.3512572213722454,
+        "expected_calibration_error": 0.04092902145181882,
+        "maximum_calibration_error": 0.35224979847457466,
         "maximum_calibration_error_bucket": {
           "class": "away",
           "lower": 0.6,
           "upper": 0.7,
           "count": 24,
-          "mean_probability": 0.6429238880389121,
+          "mean_probability": 0.6439164651412413,
           "observed_rate": 0.2916666666666667,
-          "absolute_gap": 0.3512572213722454
+          "absolute_gap": 0.35224979847457466
         },
         "support_aware_minimum_count": 30,
-        "support_aware_maximum_calibration_error": 0.12527859685877832
+        "support_aware_maximum_calibration_error": 0.11579114668274637
       },
       "confidence_buckets": {
         "below_40": {
-          "count": 81,
-          "mean_predicted_favorite_probability": 0.3748883972692271,
-          "observed_favorite_win_rate": 0.35802469135802467,
-          "absolute_calibration_gap": 0.016863705911202453,
-          "error_rate": 0.6419753086419753
+          "count": 79,
+          "mean_predicted_favorite_probability": 0.3742572631248467,
+          "observed_favorite_win_rate": 0.3670886075949367,
+          "absolute_calibration_gap": 0.007168655529909973,
+          "error_rate": 0.6329113924050633
         },
         "40_50": {
-          "count": 106,
-          "mean_predicted_favorite_probability": 0.44707575017841583,
-          "observed_favorite_win_rate": 0.3490566037735849,
-          "absolute_calibration_gap": 0.09801914640483095,
-          "error_rate": 0.6509433962264151
+          "count": 108,
+          "mean_predicted_favorite_probability": 0.44615044237820023,
+          "observed_favorite_win_rate": 0.3425925925925926,
+          "absolute_calibration_gap": 0.10355784978560761,
+          "error_rate": 0.6574074074074074
         },
         "50_60": {
           "count": 87,
-          "mean_predicted_favorite_probability": 0.5451972767092039,
+          "mean_predicted_favorite_probability": 0.545120103276778,
           "observed_favorite_win_rate": 0.5517241379310345,
-          "absolute_calibration_gap": 0.006526861221830549,
+          "absolute_calibration_gap": 0.006604034654256519,
           "error_rate": 0.4482758620689655
         },
         "60_70": {
           "count": 78,
-          "mean_predicted_favorite_probability": 0.6508105587743608,
+          "mean_predicted_favorite_probability": 0.6506988208274154,
           "observed_favorite_win_rate": 0.5897435897435898,
-          "absolute_calibration_gap": 0.06106696903077102,
+          "absolute_calibration_gap": 0.06095523108382561,
           "error_rate": 0.41025641025641024
         },
         "70_80": {
           "count": 39,
-          "mean_predicted_favorite_probability": 0.7314853885124878,
+          "mean_predicted_favorite_probability": 0.7311036972675811,
           "observed_favorite_win_rate": 0.7948717948717948,
-          "absolute_calibration_gap": 0.06338640635930703,
+          "absolute_calibration_gap": 0.06376809760421376,
           "error_rate": 0.20512820512820518
         },
         "above_80": {
           "count": 1,
-          "mean_predicted_favorite_probability": 0.8027487048195534,
+          "mean_predicted_favorite_probability": 0.8026165674551939,
           "observed_favorite_win_rate": 1.0,
-          "absolute_calibration_gap": 0.1972512951804466,
+          "absolute_calibration_gap": 0.19738343254480606,
           "error_rate": 0.0
         }
       }
     },
     "candidate_minus_current": {
-      "multiclass_brier": -0.006276131602559576,
-      "log_loss": -0.011317991019307971,
-      "poisson_deviance_per_team": -0.05006462924682786,
-      "goal_difference_mae": -0.013325367424320778
+      "multiclass_brier": -0.006256980243342647,
+      "log_loss": -0.011298851735697779,
+      "poisson_deviance_per_team": -0.04998489738123868,
+      "goal_difference_mae": -0.013396915682025279
     }
   },
   "expected_goal_distributions": {
@@ -7296,11 +7314,11 @@
     "candidate": {
       "goal_count_rates": {
         "predicted": {
-          "0": 0.31495033848373843,
-          "1": 0.3370427447701319,
-          "2": 0.2033966430776324,
-          "3": 0.09219952175619398,
-          "4_plus": 0.05241075191230328
+          "0": 0.31481005148105007,
+          "1": 0.33709632149225277,
+          "2": 0.20348843891693763,
+          "3": 0.09223307837667624,
+          "4_plus": 0.05237210973308356
         },
         "observed": {
           "0": 0.29464285714285715,
@@ -7312,11 +7330,11 @@
       },
       "goal_margin_rates": {
         "predicted": {
-          "underdog_by_2_plus": 0.07848119296530578,
-          "underdog_by_1": 0.14504506398650951,
-          "draw": 0.2486412146509065,
-          "favorite_by_1": 0.24031163075118217,
-          "favorite_by_2_plus": 0.28728569171737756
+          "underdog_by_2_plus": 0.07855436186995975,
+          "underdog_by_1": 0.1451016525254895,
+          "draw": 0.2486465096060786,
+          "favorite_by_1": 0.2403168136071142,
+          "favorite_by_2_plus": 0.2871480597816726
         },
         "observed": {
           "underdog_by_2_plus": 0.07142857142857142,
@@ -7330,18 +7348,18 @@
   },
   "bootstrap": {
     "multiclass_brier": {
-      "lower": -0.01644050290042899,
-      "upper": 0.005055139599550698,
+      "lower": -0.016314491645572003,
+      "upper": 0.004901582286497433,
       "includes_zero": true
     },
     "log_loss": {
-      "lower": -0.027398348408348906,
-      "upper": 0.006986417476824201,
+      "lower": -0.027173975286497898,
+      "upper": 0.0067625757563911995,
       "includes_zero": true
     },
     "poisson_deviance_per_team": {
-      "lower": -0.0890667043464123,
-      "upper": -0.008859373633837105,
+      "lower": -0.08865645968965356,
+      "upper": -0.00897006256197314,
       "includes_zero": false
     }
   },
@@ -7444,7 +7462,7 @@
     },
     {
       "name": "aggregate_brier_improves",
-      "measured_value": -0.006276131602559576,
+      "measured_value": -0.006256980243342647,
       "threshold": "< 0",
       "passed": true,
       "required": true,
@@ -7452,7 +7470,7 @@
     },
     {
       "name": "aggregate_log_loss_improves",
-      "measured_value": -0.011317991019307971,
+      "measured_value": -0.011298851735697779,
       "threshold": "< 0",
       "passed": true,
       "required": true,
@@ -7460,7 +7478,7 @@
     },
     {
       "name": "aggregate_poisson_deviance_improves",
-      "measured_value": -0.05006462924682786,
+      "measured_value": -0.04998489738123868,
       "threshold": "< 0",
       "passed": true,
       "required": true,
@@ -7468,7 +7486,7 @@
     },
     {
       "name": "goal_difference_mae_non_regression",
-      "measured_value": -0.013325367424320778,
+      "measured_value": -0.013396915682025279,
       "threshold": "<= 0.01",
       "passed": true,
       "required": true,
@@ -7476,7 +7494,7 @@
     },
     {
       "name": "beats_equal_probability_baseline",
-      "measured_value": 0.5993415578141942,
+      "measured_value": 0.5993607091734111,
       "threshold": "< 0.6666667",
       "passed": true,
       "required": true,
@@ -7488,7 +7506,7 @@
       "threshold": ">= 2",
       "passed": true,
       "required": true,
-      "explanation": "Fold deltas: [-0.009968509472455533, 0.002907212726119379, -0.008633319907429104]"
+      "explanation": "Fold deltas: [-0.009693224649723109, 0.0025459117627569805, -0.008631552427580291]"
     },
     {
       "name": "brier_material_regression_at_most_one_fold",
@@ -7500,7 +7518,7 @@
     },
     {
       "name": "brier_single_fold_concentration",
-      "measured_value": 0.5358886628234064,
+      "measured_value": 0.5289682165754086,
       "threshold": "<= 0.8",
       "passed": true,
       "required": true,
@@ -7512,7 +7530,7 @@
       "threshold": ">= 2",
       "passed": true,
       "required": true,
-      "explanation": "Fold deltas: [-0.011326802861277852, -0.0019684250398540604, -0.0178999451954287]"
+      "explanation": "Fold deltas: [-0.011015132572414377, -0.002363138622866301, -0.01791522839300641]"
     },
     {
       "name": "log_loss_material_regression_at_most_one_fold",
@@ -7524,7 +7542,7 @@
     },
     {
       "name": "log_loss_single_fold_concentration",
-      "measured_value": 0.5738049646341676,
+      "measured_value": 0.5724904094686789,
       "threshold": "<= 0.8",
       "passed": true,
       "required": true,
@@ -7532,7 +7550,7 @@
     },
     {
       "name": "bootstrap_multiclass_brier_excludes_material_harm",
-      "measured_value": 0.005055139599550698,
+      "measured_value": 0.004901582286497433,
       "threshold": "< 0.01",
       "passed": true,
       "required": true,
@@ -7540,7 +7558,7 @@
     },
     {
       "name": "bootstrap_log_loss_excludes_material_harm",
-      "measured_value": 0.006986417476824201,
+      "measured_value": 0.0067625757563911995,
       "threshold": "< 0.02",
       "passed": true,
       "required": true,
@@ -7548,7 +7566,7 @@
     },
     {
       "name": "bootstrap_poisson_deviance_per_team_excludes_material_harm",
-      "measured_value": -0.008859373633837105,
+      "measured_value": -0.00897006256197314,
       "threshold": "< 0.03",
       "passed": true,
       "required": true,
@@ -7556,7 +7574,7 @@
     },
     {
       "name": "home_class_brier_no_material_regression",
-      "measured_value": -0.002882440092886157,
+      "measured_value": -0.0028851135351596335,
       "threshold": "<= 0.01",
       "passed": true,
       "required": true,
@@ -7564,7 +7582,7 @@
     },
     {
       "name": "draw_class_brier_no_material_regression",
-      "measured_value": -0.002097258344083003,
+      "measured_value": -0.0020896752379566397,
       "threshold": "<= 0.01",
       "passed": true,
       "required": true,
@@ -7572,7 +7590,7 @@
     },
     {
       "name": "away_class_brier_no_material_regression",
-      "measured_value": -0.0012964331655910544,
+      "measured_value": -0.001282191470227012,
       "threshold": "<= 0.01",
       "passed": true,
       "required": true,
@@ -7580,7 +7598,7 @@
     },
     {
       "name": "total_goal_bias_not_severe",
-      "measured_value": 0.1537625908843528,
+      "measured_value": 0.15352772017709604,
       "threshold": "<= 0.15",
       "passed": false,
       "required": true,
@@ -7588,7 +7606,7 @@
     },
     {
       "name": "home_goal_bias_not_severe",
-      "measured_value": 0.14616442566852234,
+      "measured_value": 0.14813881319778827,
       "threshold": "<= 0.1",
       "passed": false,
       "required": true,
@@ -7596,7 +7614,7 @@
     },
     {
       "name": "away_goal_bias_not_severe",
-      "measured_value": 0.007598165215830421,
+      "measured_value": 0.005388906979307821,
       "threshold": "<= 0.1",
       "passed": true,
       "required": true,
@@ -7604,7 +7622,7 @@
     },
     {
       "name": "support_aware_calibration_no_severe_regression",
-      "measured_value": -0.05141696901997081,
+      "measured_value": -0.06090441919600276,
       "threshold": "<= 0.05",
       "passed": true,
       "required": true,
@@ -7614,9 +7632,9 @@
       "name": "60_70_confidence_supported_calibration",
       "measured_value": {
         "count": 78,
-        "mean_predicted_favorite_probability": 0.6508105587743608,
+        "mean_predicted_favorite_probability": 0.6506988208274154,
         "observed_favorite_win_rate": 0.5897435897435898,
-        "absolute_calibration_gap": 0.06106696903077102,
+        "absolute_calibration_gap": 0.06095523108382561,
         "error_rate": 0.41025641025641024
       },
       "threshold": "gap <= 0.15 when n >= 20",
@@ -7628,9 +7646,9 @@
       "name": "70_80_confidence_supported_calibration",
       "measured_value": {
         "count": 39,
-        "mean_predicted_favorite_probability": 0.7314853885124878,
+        "mean_predicted_favorite_probability": 0.7311036972675811,
         "observed_favorite_win_rate": 0.7948717948717948,
-        "absolute_calibration_gap": 0.06338640635930703,
+        "absolute_calibration_gap": 0.06376809760421376,
         "error_rate": 0.20512820512820518
       },
       "threshold": "gap <= 0.15 when n >= 20",
@@ -7651,9 +7669,9 @@
       "measured_value": {
         "candidate": {
           "count": 1,
-          "mean_predicted_favorite_probability": 0.8027487048195534,
+          "mean_predicted_favorite_probability": 0.8026165674551939,
           "observed_favorite_win_rate": 1.0,
-          "absolute_calibration_gap": 0.1972512951804466,
+          "absolute_calibration_gap": 0.19738343254480606,
           "error_rate": 0.0
         },
         "current": {
@@ -7663,7 +7681,7 @@
           "absolute_calibration_gap": null,
           "error_rate": null
         },
-        "gap_delta": 0.1972512951804466
+        "gap_delta": 0.19738343254480606
       },
       "threshold": "gap delta <= 0.05 when supported",
       "passed": true,
@@ -7673,8 +7691,8 @@
   ],
   "historical_gate_passed": false,
   "promotion_recommendation": "keep_v4.2.1",
-  "raw_metrics_path": "data/evaluation/elo_context_v44_historical_raw.json",
-  "raw_metrics_sha256": "032e0b18d275af38a78da82f202ab31432aee77b54459a89534b7310e3b0ad90",
+  "raw_metrics_path": "data/evaluation/elo_context_v441_historical_raw.json",
+  "raw_metrics_sha256": "635807c7ddb4e0f16d128e3522ce442a04ee546d7d80937bd0bd5a010fb7bcbc",
   "prospective_status": "limited",
   "prospective_match_count": 0,
   "gate": {
@@ -7778,7 +7796,7 @@
       },
       {
         "name": "aggregate_brier_improves",
-        "measured_value": -0.006276131602559576,
+        "measured_value": -0.006256980243342647,
         "threshold": "< 0",
         "passed": true,
         "required": true,
@@ -7786,7 +7804,7 @@
       },
       {
         "name": "aggregate_log_loss_improves",
-        "measured_value": -0.011317991019307971,
+        "measured_value": -0.011298851735697779,
         "threshold": "< 0",
         "passed": true,
         "required": true,
@@ -7794,7 +7812,7 @@
       },
       {
         "name": "aggregate_poisson_deviance_improves",
-        "measured_value": -0.05006462924682786,
+        "measured_value": -0.04998489738123868,
         "threshold": "< 0",
         "passed": true,
         "required": true,
@@ -7802,7 +7820,7 @@
       },
       {
         "name": "goal_difference_mae_non_regression",
-        "measured_value": -0.013325367424320778,
+        "measured_value": -0.013396915682025279,
         "threshold": "<= 0.01",
         "passed": true,
         "required": true,
@@ -7810,7 +7828,7 @@
       },
       {
         "name": "beats_equal_probability_baseline",
-        "measured_value": 0.5993415578141942,
+        "measured_value": 0.5993607091734111,
         "threshold": "< 0.6666667",
         "passed": true,
         "required": true,
@@ -7822,7 +7840,7 @@
         "threshold": ">= 2",
         "passed": true,
         "required": true,
-        "explanation": "Fold deltas: [-0.009968509472455533, 0.002907212726119379, -0.008633319907429104]"
+        "explanation": "Fold deltas: [-0.009693224649723109, 0.0025459117627569805, -0.008631552427580291]"
       },
       {
         "name": "brier_material_regression_at_most_one_fold",
@@ -7834,7 +7852,7 @@
       },
       {
         "name": "brier_single_fold_concentration",
-        "measured_value": 0.5358886628234064,
+        "measured_value": 0.5289682165754086,
         "threshold": "<= 0.8",
         "passed": true,
         "required": true,
@@ -7846,7 +7864,7 @@
         "threshold": ">= 2",
         "passed": true,
         "required": true,
-        "explanation": "Fold deltas: [-0.011326802861277852, -0.0019684250398540604, -0.0178999451954287]"
+        "explanation": "Fold deltas: [-0.011015132572414377, -0.002363138622866301, -0.01791522839300641]"
       },
       {
         "name": "log_loss_material_regression_at_most_one_fold",
@@ -7858,7 +7876,7 @@
       },
       {
         "name": "log_loss_single_fold_concentration",
-        "measured_value": 0.5738049646341676,
+        "measured_value": 0.5724904094686789,
         "threshold": "<= 0.8",
         "passed": true,
         "required": true,
@@ -7866,7 +7884,7 @@
       },
       {
         "name": "bootstrap_multiclass_brier_excludes_material_harm",
-        "measured_value": 0.005055139599550698,
+        "measured_value": 0.004901582286497433,
         "threshold": "< 0.01",
         "passed": true,
         "required": true,
@@ -7874,7 +7892,7 @@
       },
       {
         "name": "bootstrap_log_loss_excludes_material_harm",
-        "measured_value": 0.006986417476824201,
+        "measured_value": 0.0067625757563911995,
         "threshold": "< 0.02",
         "passed": true,
         "required": true,
@@ -7882,7 +7900,7 @@
       },
       {
         "name": "bootstrap_poisson_deviance_per_team_excludes_material_harm",
-        "measured_value": -0.008859373633837105,
+        "measured_value": -0.00897006256197314,
         "threshold": "< 0.03",
         "passed": true,
         "required": true,
@@ -7890,7 +7908,7 @@
       },
       {
         "name": "home_class_brier_no_material_regression",
-        "measured_value": -0.002882440092886157,
+        "measured_value": -0.0028851135351596335,
         "threshold": "<= 0.01",
         "passed": true,
         "required": true,
@@ -7898,7 +7916,7 @@
       },
       {
         "name": "draw_class_brier_no_material_regression",
-        "measured_value": -0.002097258344083003,
+        "measured_value": -0.0020896752379566397,
         "threshold": "<= 0.01",
         "passed": true,
         "required": true,
@@ -7906,7 +7924,7 @@
       },
       {
         "name": "away_class_brier_no_material_regression",
-        "measured_value": -0.0012964331655910544,
+        "measured_value": -0.001282191470227012,
         "threshold": "<= 0.01",
         "passed": true,
         "required": true,
@@ -7914,7 +7932,7 @@
       },
       {
         "name": "total_goal_bias_not_severe",
-        "measured_value": 0.1537625908843528,
+        "measured_value": 0.15352772017709604,
         "threshold": "<= 0.15",
         "passed": false,
         "required": true,
@@ -7922,7 +7940,7 @@
       },
       {
         "name": "home_goal_bias_not_severe",
-        "measured_value": 0.14616442566852234,
+        "measured_value": 0.14813881319778827,
         "threshold": "<= 0.1",
         "passed": false,
         "required": true,
@@ -7930,7 +7948,7 @@
       },
       {
         "name": "away_goal_bias_not_severe",
-        "measured_value": 0.007598165215830421,
+        "measured_value": 0.005388906979307821,
         "threshold": "<= 0.1",
         "passed": true,
         "required": true,
@@ -7938,7 +7956,7 @@
       },
       {
         "name": "support_aware_calibration_no_severe_regression",
-        "measured_value": -0.05141696901997081,
+        "measured_value": -0.06090441919600276,
         "threshold": "<= 0.05",
         "passed": true,
         "required": true,
@@ -7948,9 +7966,9 @@
         "name": "60_70_confidence_supported_calibration",
         "measured_value": {
           "count": 78,
-          "mean_predicted_favorite_probability": 0.6508105587743608,
+          "mean_predicted_favorite_probability": 0.6506988208274154,
           "observed_favorite_win_rate": 0.5897435897435898,
-          "absolute_calibration_gap": 0.06106696903077102,
+          "absolute_calibration_gap": 0.06095523108382561,
           "error_rate": 0.41025641025641024
         },
         "threshold": "gap <= 0.15 when n >= 20",
@@ -7962,9 +7980,9 @@
         "name": "70_80_confidence_supported_calibration",
         "measured_value": {
           "count": 39,
-          "mean_predicted_favorite_probability": 0.7314853885124878,
+          "mean_predicted_favorite_probability": 0.7311036972675811,
           "observed_favorite_win_rate": 0.7948717948717948,
-          "absolute_calibration_gap": 0.06338640635930703,
+          "absolute_calibration_gap": 0.06376809760421376,
           "error_rate": 0.20512820512820518
         },
         "threshold": "gap <= 0.15 when n >= 20",
@@ -7985,9 +8003,9 @@
         "measured_value": {
           "candidate": {
             "count": 1,
-            "mean_predicted_favorite_probability": 0.8027487048195534,
+            "mean_predicted_favorite_probability": 0.8026165674551939,
             "observed_favorite_win_rate": 1.0,
-            "absolute_calibration_gap": 0.1972512951804466,
+            "absolute_calibration_gap": 0.19738343254480606,
             "error_rate": 0.0
           },
           "current": {
@@ -7997,7 +8015,7 @@
             "absolute_calibration_gap": null,
             "error_rate": null
           },
-          "gap_delta": 0.1972512951804466
+          "gap_delta": 0.19738343254480606
         },
         "threshold": "gap delta <= 0.05 when supported",
         "passed": true,

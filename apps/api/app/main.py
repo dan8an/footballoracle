@@ -11,7 +11,8 @@ from .service import STATIC_MODEL_VERSION, service
 from modeling.src.simulation import simulate_tournament
 from modeling.src.readiness import load_readiness
 
-READINESS_PATH = Path(__file__).resolve().parents[3] / "data" / "evaluation" / "elo_context_v43_readiness.json"
+READINESS_PATH = Path(__file__).resolve().parents[3] / "data" / "evaluation" / "elo_context_v44_gate_v2_readiness.json"
+PROSPECTIVE_SCORECARD_PATH = Path(__file__).resolve().parents[3] / "data" / "evaluation" / "wc26_prospective_scorecard.json"
 
 # Local development, production, and optional deployment-specific frontend origins.
 allowed_origins = [
@@ -141,6 +142,29 @@ def predictions() -> dict:
     return service.latest_predictions_payload()
 
 
+@app.get("/v1/simulations/snapshots")
+def simulation_snapshots() -> list[dict]:
+    return service.simulation_snapshots()
+
+
+@app.get("/v1/simulations")
+def historical_simulation(snapshot: str = Query(...)) -> dict:
+    try:
+        payload = service.snapshot_simulation(snapshot)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    if payload is None:
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "code": "snapshot_unavailable",
+                "snapshot": snapshot,
+                "message": "This historical simulation snapshot has not been generated.",
+            },
+        )
+    return payload
+
+
 @app.get("/api/simulations/latest", include_in_schema=False)
 @app.get("/v1/simulations/latest")
 def latest_simulation() -> dict:
@@ -195,6 +219,17 @@ def model_performance() -> dict:
         "readiness": readiness,
         **report,
     }
+
+
+@app.get("/v1/model/prospective-scorecard")
+def prospective_scorecard() -> dict:
+    try:
+        payload = json.loads(PROSPECTIVE_SCORECARD_PATH.read_text())
+        if not isinstance(payload.get("models"), dict) or "prospective_status" not in payload:
+            raise ValueError("malformed scorecard")
+        return payload
+    except (OSError, ValueError, TypeError):
+        return {"prospective_status": "unavailable", "models": {}, "paired_comparisons": [], "message": "A valid prospective tournament scorecard is unavailable."}
 
 
 @app.get("/v1/data/status")

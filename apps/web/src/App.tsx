@@ -1,4 +1,4 @@
-import { NavLink, Route, Routes } from "react-router-dom";
+import { Navigate, NavLink, Route, Routes } from "react-router-dom";
 import { Dashboard } from "./pages/Dashboard";
 import { MatchDetail } from "./pages/MatchDetail";
 import { Matches } from "./pages/Matches";
@@ -15,7 +15,7 @@ const links = [
   ["/results", "Results"],
   ["/bracket", "Bracket"],
   ["/teams", "Teams"],
-  ["/simulator", "Simulator"],
+  ["/simulations", "Simulation"],
   ["/model-explainer", "Model"],
 ];
 
@@ -47,7 +47,8 @@ export default function App() {
           <Route path="/match/:id" element={<MatchDetail />} />
           <Route path="/teams" element={<Teams />} />
           <Route path="/teams/:id" element={<TeamDetail />} />
-          <Route path="/simulator" element={<Simulator />} />
+          <Route path="/simulations" element={<Simulator />} />
+          <Route path="/simulator" element={<Navigate to="/simulations" replace />} />
           <Route path="/model-explainer" element={<Methodology />} />
         </Routes>
       </main>

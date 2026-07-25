@@ -1,0 +1,20 @@
+{
+  "artifact_version": 1,
+  "plan_hash": "38d562075e78ecf470a38fcb49b972441f3b39aca8eec869fcf13a828318215c",
+  "attempts": [
+    {
+      "attempt": 1,
+      "status": "infrastructure_failure_before_metrics",
+      "reason": "Wrapper referenced the draw-preservation helper from the wrong module; no metrics or parameters were changed.",
+      "identical_locked_plan": true
+    },
+    {
+      "attempt": 2,
+      "started_at": "2026-07-14T01:14:52.147430+00:00",
+      "status": "completed",
+      "reason": "initial_locked_evaluation",
+      "raw_metrics_sha256": "635807c7ddb4e0f16d128e3522ce442a04ee546d7d80937bd0bd5a010fb7bcbc",
+      "identical_locked_plan": true
+    }
+  ]
+}

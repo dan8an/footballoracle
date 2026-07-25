@@ -14,8 +14,20 @@ export function Methodology() {
       <h1>Transparent by design</h1>
       <p className="lead">
         {report?.readiness.message ??
-          "This Elo-informed model has not yet passed the project’s production calibration gate."}
+          "A valid historical-readiness artifact is unavailable."}
       </p>
+      {report && (
+        <div className={`notice ${report.readiness.historical_gate_passed ? "" : "warning"}`}>
+          <strong>Historical production gate:</strong>{" "}
+          {report.readiness.historical_gate_passed ? "passed" : "not passed"}.{" "}
+          {report.readiness.historical_gate_version &&
+            `${report.readiness.historical_gate_version} · ${report.readiness.historical_fold_count ?? 0} folds · ${report.readiness.historical_match_count ?? 0} matches. `}
+          <strong>Prospective 2026 scorecard:</strong>{" "}
+          {report.readiness.prospective_match_count} eligible pre-kickoff predictions
+          ({report.readiness.prospective_status}). These are separate statuses.
+          {report.readiness.historical_disclosure && ` ${report.readiness.historical_disclosure}`}
+        </div>
+      )}
       <h2>How a match is modeled</h2>
       <p>
         FIFA ranking positions are transformed into an Elo-equivalent strength

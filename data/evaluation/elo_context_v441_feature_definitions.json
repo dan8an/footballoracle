@@ -1,0 +1,12 @@
+{
+  "model_version": "elo-context-v4.4.1-home-xg-correction-experimental",
+  "base_feature_definition": "data/evaluation/elo_context_v44_feature_definitions.json",
+  "architecture_change": "The v4.4 shared ridge-Poisson feature vector is retained; only the non-neutral home coefficient receives predefined stronger ridge regularization.",
+  "home_non_neutral_rule": "One only for a source row explicitly marked non-neutral and the listed home scoring side.",
+  "neutral_rule": "Use the historical source neutral boolean exactly; unknown venue facts are not inferred.",
+  "direct_bias_offset": false,
+  "draw_calibration_changed": false,
+  "dixon_coles_changed": false,
+  "confidence_thresholds_changed": false,
+  "xg_bounds": [0.2, 4.5]
+}

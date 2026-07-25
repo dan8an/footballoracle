@@ -7,6 +7,7 @@ import sys
 import tempfile
 import unittest
 from collections import defaultdict
+from datetime import datetime, timezone
 from pathlib import Path
 
 from modeling.src.data import build_fixtures, load_teams
@@ -31,14 +32,19 @@ ROOT = Path(__file__).resolve().parents[2]
 SCHEMA = """
 create table model_runs (
   id text primary key,
-  model_version text
+  model_version text,
+  status text
 );
 create table predictions (
   id text primary key,
+  match_id text,
+  provider_fixture_id integer,
   canonical_match_id text,
   model_run_id text,
   model_version text,
   prediction_timestamp text,
+  created_at text,
+  generation_mode text,
   home_xg real,
   away_xg real,
   home_win_probability real,
@@ -100,6 +106,12 @@ create table simulation_runs (
   model_version text,
   num_simulations integer,
   random_seed integer,
+  snapshot_key text,
+  cutoff_at text,
+  reconstruction_mode text,
+  simulation_config_version text,
+  status text,
+  provenance text,
   created_at text
 );
 create table team_simulation_results (
@@ -576,7 +588,7 @@ class SimulationScriptTests(unittest.TestCase):
     def tearDown(self):
         self.temp_dir.cleanup()
 
-    def run_script(self):
+    def run_script(self, extra_args=None):
         return subprocess.run(
             [
                 sys.executable,
@@ -585,6 +597,7 @@ class SimulationScriptTests(unittest.TestCase):
                 "10",
                 "--seed",
                 "11",
+                *(extra_args or []),
             ],
             cwd=ROOT,
             env={
@@ -822,6 +835,221 @@ class SimulationScriptTests(unittest.TestCase):
         self.assertTrue(quarterfinal.completed)
         self.assertEqual((quarterfinal.home_score, quarterfinal.away_score), (2, 0))
 
+    def test_snapshot_cutoff_controls_completed_results_and_future_participants(self):
+        self.insert_match_rows(
+            [
+                {
+                    "id": "r32-before",
+                    "match_number": 73,
+                    "tournament_stage": "Round of 32",
+                    "kickoff": "2026-06-28T19:00:00+00:00",
+                    "home_team_id": "MEX",
+                    "away_team_id": "CAN",
+                    "home_score": 1,
+                    "away_score": 0,
+                    "status": "FT",
+                },
+                {
+                    "id": "r16-after",
+                    "match_number": 89,
+                    "tournament_stage": "Round of 16",
+                    "kickoff": "2026-07-04T21:00:00+00:00",
+                    "home_team_id": "MEX",
+                    "away_team_id": "USA",
+                    "home_score": 2,
+                    "away_score": 0,
+                    "status": "FT",
+                },
+                {
+                    "id": "final-future-participants",
+                    "match_number": 104,
+                    "tournament_stage": "Final",
+                    "kickoff": "2026-07-19T19:00:00+00:00",
+                    "home_team_id": "MEX",
+                    "away_team_id": "ARG",
+                    "home_score": 0,
+                    "away_score": 1,
+                    "status": "FT",
+                },
+            ]
+        )
+        cutoff = datetime(2026, 7, 4, 17, tzinfo=timezone.utc)
+
+        states = self.repository().load_match_states(
+            self.database_team_ids(),
+            cutoff_at=cutoff,
+            snapshot_stage="round_of_16",
+        )
+
+        self.assertTrue(next(row for row in states if row.id == "r32-before").completed)
+        self.assertFalse(next(row for row in states if row.id == "r16-after").completed)
+        self.assertNotIn("final-future-participants", {row.id for row in states})
+
+    def test_historical_prediction_selection_is_before_cutoff_and_kickoff(self):
+        self.insert_teams_and_ratings()
+        prediction = certain_home_win_prediction()
+        self.insert_prediction_rows(
+            {"WC26-001": prediction}, model_run_id="eligible-run"
+        )
+        with sqlite3.connect(self.database_path) as connection:
+            connection.execute(
+                "insert into model_runs (id, model_version, status) values (?, ?, ?)",
+                ("failed-run", MODEL_VERSION, "failed"),
+            )
+            connection.execute(
+                """
+                insert into predictions (
+                  id, canonical_match_id, model_run_id, model_version,
+                  prediction_timestamp, home_xg, away_xg,
+                  home_win_probability, draw_probability,
+                  away_win_probability, score_probabilities
+                ) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    "after-cutoff",
+                    "WC26-002",
+                    "eligible-run",
+                    MODEL_VERSION,
+                    "2026-06-11T19:30:00+00:00",
+                    9,
+                    0,
+                    1,
+                    0,
+                    0,
+                    "[]",
+                ),
+            )
+            connection.execute(
+                """
+                insert into predictions (
+                  id, canonical_match_id, model_run_id, model_version,
+                  prediction_timestamp, home_xg, away_xg,
+                  home_win_probability, draw_probability,
+                  away_win_probability, score_probabilities
+                ) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    "failed-run-prediction",
+                    "WC26-003",
+                    "failed-run",
+                    MODEL_VERSION,
+                    "2026-06-11T12:00:00+00:00",
+                    9,
+                    0,
+                    1,
+                    0,
+                    0,
+                    "[]",
+                ),
+            )
+            connection.execute(
+                """
+                insert into predictions (
+                  id, canonical_match_id, model_run_id, model_version,
+                  prediction_timestamp, home_xg, away_xg,
+                  home_win_probability, draw_probability,
+                  away_win_probability, score_probabilities
+                ) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    "after-kickoff",
+                    "WC26-001",
+                    "eligible-run",
+                    MODEL_VERSION,
+                    "2026-06-11T18:30:00+00:00",
+                    9,
+                    0,
+                    1,
+                    0,
+                    0,
+                    "[]",
+                ),
+            )
+        cutoff = datetime(2026, 6, 11, 19, tzinfo=timezone.utc)
+
+        selected, audit = self.repository().load_historical_predictions(
+            cutoff, [], MODEL_VERSION
+        )
+
+        self.assertEqual(selected["WC26-001"]["id"], "WC26-001")
+        self.assertIn("WC26-002", audit["rejected_after_cutoff"])
+        self.assertIn("WC26-001", audit["rejected_at_or_after_kickoff"])
+        self.assertNotIn("WC26-002", selected)
+        self.assertNotIn("WC26-003", selected)
+
+    def test_snapshot_storage_is_idempotent_and_transactional(self):
+        repository = self.repository()
+        result = {
+            "team_id": "MEX",
+            **{f"{stage}_probability": 0.25 for stage in (
+                "group_stage_exit",
+                "round_of_32",
+                "round_of_16",
+                "quarterfinal",
+                "semifinal",
+                "final",
+                "champion",
+            )},
+        }
+        cutoff = datetime(2026, 6, 11, 19, tzinfo=timezone.utc)
+        first = repository.store_results(
+            None,
+            MODEL_VERSION,
+            10,
+            7,
+            [result],
+            snapshot_key="pre_tournament",
+            cutoff_at=cutoff,
+            reconstruction_mode="retrospective_reconstruction",
+            provenance={"test": True},
+        )
+        second = repository.store_results(
+            None,
+            MODEL_VERSION,
+            10,
+            7,
+            [result],
+            snapshot_key="pre_tournament",
+            cutoff_at=cutoff,
+            reconstruction_mode="retrospective_reconstruction",
+            provenance={"test": True},
+        )
+        self.assertNotEqual(first, second)
+        with sqlite3.connect(self.database_path) as connection:
+            self.assertEqual(
+                connection.execute(
+                    "select count(*) from simulation_runs where snapshot_key = ?",
+                    ("pre_tournament",),
+                ).fetchone()[0],
+                1,
+            )
+            self.assertEqual(
+                connection.execute(
+                    "select count(*) from team_simulation_results"
+                ).fetchone()[0],
+                1,
+            )
+
+        with self.assertRaises(Exception):
+            repository.store_results(
+                None,
+                MODEL_VERSION,
+                10,
+                7,
+                [{"team_id": "USA"}],
+                snapshot_key="pre_final",
+                cutoff_at=datetime(2026, 7, 19, 19, tzinfo=timezone.utc),
+                reconstruction_mode="retrospective_reconstruction",
+            )
+        with sqlite3.connect(self.database_path) as connection:
+            self.assertEqual(
+                connection.execute(
+                    "select count(*) from simulation_runs where snapshot_key = ?",
+                    ("pre_final",),
+                ).fetchone()[0],
+                0,
+            )
+
     def test_script_runs_with_completed_group_stage_and_four_knockout_predictions(self):
         self.insert_teams_and_ratings()
         fixtures = build_fixtures(load_teams())
@@ -894,6 +1122,21 @@ class SimulationScriptTests(unittest.TestCase):
 
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn("no prediction run available", result.stderr)
+
+    def test_snapshot_dry_run_audits_without_writing(self):
+        self.insert_teams_and_ratings()
+
+        result = self.run_script(["--snapshot", "pre_tournament", "--dry-run"])
+
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("model=elo-context-v4.2.1", result.stderr)
+        self.assertIn("mode=retrospective_reconstruction", result.stderr)
+        self.assertIn("DRY RUN: no simulation executed and no rows written", result.stderr)
+        with sqlite3.connect(self.database_path) as connection:
+            self.assertEqual(
+                connection.execute("select count(*) from simulation_runs").fetchone()[0],
+                0,
+            )
 
 
 if __name__ == "__main__":

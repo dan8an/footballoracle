@@ -1,0 +1,26 @@
+[
+  {
+    "match_id": "dry-run-future-match",
+    "provider_id": "dry-run-provider-match",
+    "kickoff": "2099-07-18T19:00:00+00:00",
+    "generated_at": "2099-07-18T16:00:00+00:00",
+    "model_version": "elo-context-v4.2.1",
+    "home_win": 0.5,
+    "draw": 0.3,
+    "away_win": 0.2,
+    "expected_home_goals": 1.4,
+    "expected_away_goals": 0.9
+  },
+  {
+    "match_id": "dry-run-future-match",
+    "provider_id": "dry-run-provider-match",
+    "kickoff": "2099-07-18T19:00:00+00:00",
+    "generated_at": "2099-07-18T16:00:00+00:00",
+    "model_version": "elo-context-v4.4-opponent-adjusted-xg-experimental",
+    "home_win": 0.52,
+    "draw": 0.29,
+    "away_win": 0.19,
+    "expected_home_goals": 1.5,
+    "expected_away_goals": 0.85
+  }
+]

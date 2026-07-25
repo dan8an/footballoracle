@@ -177,12 +177,35 @@ export type Simulation = {
   generated_at: string;
   created_at: string;
   data_cutoff: string;
-  source: "database_latest" | "fallback_static";
+  source: "database_latest" | "database_snapshot" | "fallback_static";
+  snapshot?: SimulationSnapshot;
+  reconstruction_mode?:
+    | "historical_exact"
+    | "historical_prediction_snapshot"
+    | "retrospective_reconstruction";
+  provenance?: Record<string, unknown>;
   monte_carlo_precision: {
     worst_case_standard_error: number;
     worst_case_95_margin: number;
   };
   teams: SimulationTeam[];
+};
+
+export type SimulationSnapshot = {
+  key:
+    | "pre_tournament"
+    | "pre_round_of_32"
+    | "pre_round_of_16"
+    | "pre_quarterfinals"
+    | "pre_semifinals"
+    | "pre_final";
+  label: string;
+  stage: string;
+  cutoff_at: string;
+  sort_order: number;
+  description: string;
+  cutoff_source?: "database_schedule" | "audited_fallback";
+  available?: boolean;
 };
 
 export type ModelMetrics = {
@@ -209,6 +232,15 @@ export type ModelPerformance = {
     ready: boolean;
     message: string;
     failed_conditions: string[];
+    historical_gate_passed: boolean;
+    historical_gate_version?: string;
+    historical_match_count?: number;
+    historical_fold_count?: number;
+    historical_disclosure?: string;
+    prospective_status: string;
+    prospective_match_count: number;
+    production_model_version: string;
+    candidate_model_version: string | null;
   };
   generated_at: string;
   protocol: {

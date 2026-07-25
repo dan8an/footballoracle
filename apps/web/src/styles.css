@@ -166,6 +166,13 @@ input, select { background: var(--panel); color: var(--ink); border: 1px solid v
 .sim-controls { align-items: end; padding: 20px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); }
 .sim-controls label { color: var(--muted); font-size: 12px; }
 .sim-controls input { display: block; margin-top: 7px; }
+.snapshot-controls { display: grid; gap: 8px; max-width: 520px; margin-bottom: 24px; padding: 20px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); }
+.snapshot-controls label { font-weight: 700; }
+.snapshot-controls p { margin: 0; color: var(--muted); font-size: 14px; }
+.snapshot-metadata { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1px; margin: 0 0 20px; overflow: hidden; border: 1px solid var(--line); border-radius: 12px; background: var(--line); }
+.snapshot-metadata div { padding: 14px 16px; background: var(--panel); }
+.snapshot-metadata dt { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .06em; }
+.snapshot-metadata dd { margin: 5px 0 0; font-weight: 650; }
 .table-wrap { overflow: auto; border: 1px solid var(--line); border-radius: 12px; }
 table { width: 100%; border-collapse: collapse; min-width: 720px; }
 th, td { text-align: right; padding: 14px 18px; border-bottom: 1px solid var(--line); }
@@ -268,6 +275,7 @@ th:first-child, td:first-child { text-align: left; }
   .result-row { grid-template-columns: 30px 82px 1fr 48px; }
   .result-row small { grid-column: 2 / -1; }
   .filters, .sim-controls { align-items: stretch; flex-direction: column; }
+  .snapshot-metadata { grid-template-columns: 1fr 1fr; }
   .metric-grid { grid-template-columns: 1fr; }
   .filters input { min-width: 0; }
   .outcome-card { padding: 18px 20px; }

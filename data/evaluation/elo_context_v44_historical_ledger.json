@@ -1,0 +1,14 @@
+{
+  "artifact_version": 1,
+  "plan_hash": "0c51da975adc50b648dd7187afa7ce5fa025d14fcb6f6cce1a0220ac99e75437",
+  "attempts": [
+    {
+      "attempt": 1,
+      "started_at": "2026-07-14T00:51:39.692895+00:00",
+      "status": "completed",
+      "reason": "initial_locked_evaluation",
+      "raw_metrics_sha256": "032e0b18d275af38a78da82f202ab31432aee77b54459a89534b7310e3b0ad90",
+      "identical_locked_plan": true
+    }
+  ]
+}

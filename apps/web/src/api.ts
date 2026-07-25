@@ -1,4 +1,11 @@
-import type { Match, ModelPerformance, Simulation, Team, TeamProfile } from "./types";
+import type {
+  Match,
+  ModelPerformance,
+  Simulation,
+  SimulationSnapshot,
+  Team,
+  TeamProfile,
+} from "./types";
 
 const configuredApiUrl = import.meta.env.VITE_API_URL;
 
@@ -27,6 +34,12 @@ export const api = {
   teams: () => request<Team[]>("/teams"),
   team: (id: string) => request<TeamProfile>(`/teams/${id}`),
   simulation: () => request<Simulation>("/simulations/latest"),
+  simulationSnapshots: () =>
+    request<SimulationSnapshot[]>("/simulations/snapshots"),
+  historicalSimulation: (snapshot: SimulationSnapshot["key"]) =>
+    request<Simulation>(
+      `/simulations?snapshot=${encodeURIComponent(snapshot)}`,
+    ),
   performance: () => request<ModelPerformance>("/model/performance"),
   customSimulation: (iterations: number, seed: number) =>
     request<Simulation>("/simulations/custom", {
