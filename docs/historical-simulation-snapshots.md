@@ -133,7 +133,9 @@ fixture IDs. It never simulates or writes.
 - `GET /v1/simulations/snapshots` lists all definitions in chronological order
   and marks stored availability.
 - `GET /v1/simulations?snapshot=pre_round_of_16` returns only that snapshot's
-  newest successful run, metadata, provenance, and team probabilities.
+  newest successful run, metadata, provenance, and probabilities for the teams
+  that were still active at the cutoff. Stored result rows are not deleted or
+  rewritten by this response filtering.
 - Unknown keys return 422; valid keys without a run return a structured 404.
 - `GET /v1/simulations/latest` retains its legacy meaning: the newest
   current-state run (`snapshot_key is null`). Historical backfills cannot
@@ -142,7 +144,10 @@ fixture IDs. It never simulates or writes.
 The web explorer uses the snapshot endpoints and stores the selection in
 `/simulations?snapshot=...`. It does not use the `latest` endpoint. Invalid URL
 values fall back to `pre_tournament`; switching keys clears the prior display
-while the selected run loads.
+while the selected run loads. New snapshot runs record the selected-stage
+participant IDs in provenance. The API prefers that participant set, then the
+official selected-stage bracket rows, with the selected-stage advancement
+probability as a compatibility fallback for older data.
 
 ## Production verification checklist
 

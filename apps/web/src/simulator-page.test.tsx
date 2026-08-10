@@ -135,6 +135,24 @@ describe("Historical simulation explorer", () => {
     );
   });
 
+  it("does not render teams explicitly marked inactive", () => {
+    const data = simulation("pre_round_of_16", "Active Spain");
+    data.teams.push({
+      ...data.teams[0],
+      team_id: "ELIM",
+      team_name: "Eliminated Team",
+      is_active_at_snapshot: false,
+      champion: 0.9,
+    });
+
+    const html = renderPage("/simulations?snapshot=pre_round_of_16", {
+      pre_round_of_16: data,
+    });
+
+    expect(html).toContain("Active Spain");
+    expect(html).not.toContain("Eliminated Team");
+  });
+
   it("shows loading without presenting the previous snapshot as the new one", () => {
     const html = renderPage("/simulations?snapshot=pre_final", {
       pre_tournament: simulation("pre_tournament", "Old snapshot team"),

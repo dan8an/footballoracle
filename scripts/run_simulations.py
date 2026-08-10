@@ -27,6 +27,7 @@ if str(ROOT) not in sys.path:
 from modeling.src.data import build_fixtures, load_teams, validate_tournament
 from modeling.src.historical_snapshots import (
     SNAPSHOTS,
+    SNAPSHOT_ACTIVE_TEAM_COUNTS,
     get_snapshot,
     resolve_snapshot_cutoff,
 )
@@ -1546,9 +1547,28 @@ def run_historical_snapshot(
         1 for match in match_states
         if match.stage in KNOCKOUT_STAGES and match.completed
     )
+    active_team_ids = (
+        sorted(team.id for team in load_teams())
+        if snapshot.stage == "group"
+        else sorted(
+            {
+                team_id
+                for match in match_states
+                if match.stage == snapshot.stage
+                for team_id in (match.home_team_id, match.away_team_id)
+            }
+        )
+    )
+    expected_active_count = SNAPSHOT_ACTIVE_TEAM_COUNTS[snapshot.key]
+    if len(active_team_ids) != expected_active_count:
+        raise ValueError(
+            f"Snapshot {snapshot.key} requires {expected_active_count} active "
+            f"teams; reconstructed {len(active_team_ids)}"
+        )
     provenance = {
         "snapshot_key": snapshot.key,
         "snapshot_stage": snapshot.stage,
+        "active_team_ids": active_team_ids,
         "cutoff_source": cutoff_source,
         "completed_group_matches": completed_groups,
         "completed_knockout_matches": completed_knockouts,

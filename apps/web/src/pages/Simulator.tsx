@@ -90,7 +90,11 @@ export function Simulator() {
     simulationQuery.isLoading ||
     (simulationQuery.isFetching && !simulationQuery.data);
   const data = simulationQuery.data;
-  const rankedTeams = data ? rankSimulationTeams(data.teams) : [];
+  const rankedTeams = data
+    ? rankSimulationTeams(
+        data.teams.filter((team) => team.is_active_at_snapshot !== false),
+      )
+    : [];
   const visibleColumns = probabilityColumns.filter(({ key }) =>
     rankedTeams.some((team) => typeof team[key] === "number"),
   );

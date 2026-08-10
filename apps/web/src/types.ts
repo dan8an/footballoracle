@@ -149,6 +149,7 @@ export type Match = {
 export type SimulationTeam = {
   team_id: string;
   team_name: string;
+  is_active_at_snapshot?: boolean;
   flag?: string;
   group?: string;
   confederation?: string;

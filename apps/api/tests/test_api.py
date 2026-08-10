@@ -134,13 +134,16 @@ class LatestV4SimulationSource:
 
 
 class HistoricalSimulationSource(LatestV4SimulationSource):
+    def __init__(self, unavailable=()):
+        self.unavailable = set(unavailable)
+
     def list_snapshots(self):
         keys = [
             ("pre_tournament", "Before Tournament", 1, True),
-            ("pre_round_of_32", "Before Round of 32", 2, False),
+            ("pre_round_of_32", "Before Round of 32", 2, True),
             ("pre_round_of_16", "Before Round of 16", 3, True),
-            ("pre_quarterfinals", "Before Quarterfinals", 4, False),
-            ("pre_semifinals", "Before Semifinals", 5, False),
+            ("pre_quarterfinals", "Before Quarterfinals", 4, True),
+            ("pre_semifinals", "Before Semifinals", 5, True),
             ("pre_final", "Before Final", 6, True),
         ]
         return [
@@ -151,29 +154,48 @@ class HistoricalSimulationSource(LatestV4SimulationSource):
                 "cutoff_at": f"2026-07-{order:02d}T00:00:00+00:00",
                 "sort_order": order,
                 "description": label,
-                "available": available,
+                "available": available and key not in self.unavailable,
             }
             for key, label, order, available in keys
         ]
 
     def load_snapshot(self, snapshot_key):
-        if snapshot_key not in {"pre_tournament", "pre_round_of_16", "pre_final"}:
+        if snapshot_key in self.unavailable:
             return None
         payload = self.load_latest()
         champion = {
             "pre_tournament": 0.22,
+            "pre_round_of_32": 0.2,
             "pre_round_of_16": 0.31,
+            "pre_quarterfinals": 0.4,
+            "pre_semifinals": 0.45,
             "pre_final": 0.5,
         }[snapshot_key]
+        active_count = {
+            "pre_tournament": 48,
+            "pre_round_of_32": 32,
+            "pre_round_of_16": 16,
+            "pre_quarterfinals": 8,
+            "pre_semifinals": 4,
+            "pre_final": 2,
+        }[snapshot_key]
+        active_team_ids = [
+            team.id for team in load_teams()[:active_count]
+        ]
         payload["run"] = {
             **payload["run"],
             "id": f"run-{snapshot_key}",
             "snapshot_key": snapshot_key,
             "cutoff_at": "2026-07-04T17:00:00+00:00",
             "reconstruction_mode": "retrospective_reconstruction",
-            "provenance": {"eligible_prediction_count": 8},
+            "provenance": {
+                "eligible_prediction_count": 8,
+                "active_team_ids": active_team_ids,
+            },
         }
         payload["results"][0]["champion_probability"] = champion
+        if snapshot_key == "pre_final":
+            payload["results"][1]["champion_probability"] = 0.0
         return payload
 
 
@@ -187,10 +209,10 @@ def use_v4_simulation_service(monkeypatch):
     return service
 
 
-def use_historical_simulation_service(monkeypatch):
+def use_historical_simulation_service(monkeypatch, simulation_source=None):
     service = PredictionService(
         prediction_source=LatestV4PredictionSource(),
-        simulation_source=HistoricalSimulationSource(),
+        simulation_source=simulation_source or HistoricalSimulationSource(),
         prediction_cache_seconds=0,
     )
     monkeypatch.setattr(main_module, "service", service)
@@ -1008,7 +1030,7 @@ def test_snapshot_catalog_is_ordered_and_marks_availability(monkeypatch):
         "pre_final",
     ]
     assert payload[0]["available"] is True
-    assert payload[1]["available"] is False
+    assert payload[1]["available"] is True
 
 
 def test_snapshot_retrieval_serializes_metadata_without_cross_selection(monkeypatch):
@@ -1028,8 +1050,110 @@ def test_snapshot_retrieval_serializes_metadata_without_cross_selection(monkeypa
     assert final.json()["teams"][0]["champion"] == 0.5
 
 
+def test_historical_snapshots_return_only_active_teams(monkeypatch):
+    service = use_historical_simulation_service(monkeypatch)
+    expected_counts = {
+        "pre_tournament": 48,
+        "pre_round_of_32": 32,
+        "pre_round_of_16": 16,
+        "pre_quarterfinals": 8,
+        "pre_semifinals": 4,
+        "pre_final": 2,
+    }
+
+    payloads = {
+        snapshot: client.get(f"/v1/simulations?snapshot={snapshot}").json()
+        for snapshot in expected_counts
+    }
+
+    assert {
+        snapshot: len(payload["teams"])
+        for snapshot, payload in payloads.items()
+    } == expected_counts
+    assert all(
+        team["is_active_at_snapshot"] is True
+        for payload in payloads.values()
+        for team in payload["teams"]
+    )
+
+    teams = load_teams()
+    round_of_32_loser = teams[31].id
+    semifinal_loser = teams[3].id
+    zero_champion_finalist = teams[1].id
+    assert round_of_32_loser in {
+        team["team_id"] for team in payloads["pre_round_of_32"]["teams"]
+    }
+    assert round_of_32_loser not in {
+        team["team_id"] for team in payloads["pre_round_of_16"]["teams"]
+    }
+    assert semifinal_loser in {
+        team["team_id"] for team in payloads["pre_semifinals"]["teams"]
+    }
+    assert semifinal_loser not in {
+        team["team_id"] for team in payloads["pre_final"]["teams"]
+    }
+    assert zero_champion_finalist in {
+        team["team_id"] for team in payloads["pre_final"]["teams"]
+    }
+    finalist = next(
+        team
+        for team in payloads["pre_final"]["teams"]
+        if team["team_id"] == zero_champion_finalist
+    )
+    assert finalist["champion"] == 0.0
+
+    stored_snapshot = service.simulation_source.load_snapshot("pre_final")
+    assert len(stored_snapshot["results"]) == 48
+    assert len(payloads["pre_final"]["teams"]) == 2
+
+
+def test_snapshot_eligibility_prefers_official_stage_participants(monkeypatch):
+    teams = load_teams()
+
+    class LegacySnapshotSource(HistoricalSimulationSource):
+        def load_snapshot(self, snapshot_key):
+            payload = super().load_snapshot(snapshot_key)
+            payload["run"]["provenance"] = {}
+            for row in payload["results"]:
+                row["round_of_16_probability"] = 0.5
+            return payload
+
+    class RoundOf16MatchSource:
+        def load(self):
+            return [
+                {
+                    "id": f"r16-{index}",
+                    "match_number": 88 + index,
+                    "stage": "Round of 16",
+                    "kickoff": f"2026-07-{4 + (index - 1) // 4:02d}T17:00:00Z",
+                    "home_team_id": teams[(index - 1) * 2].id,
+                    "away_team_id": teams[(index - 1) * 2 + 1].id,
+                    "status": "scheduled",
+                }
+                for index in range(1, 9)
+            ]
+
+    service = PredictionService(
+        prediction_source=LatestV4PredictionSource(),
+        simulation_source=LegacySnapshotSource(),
+        match_result_source=RoundOf16MatchSource(),
+        prediction_cache_seconds=0,
+    )
+    monkeypatch.setattr(main_module, "service", service)
+
+    response = client.get("/v1/simulations?snapshot=pre_round_of_16")
+
+    assert response.status_code == 200
+    assert {team["team_id"] for team in response.json()["teams"]} == {
+        team.id for team in teams[:16]
+    }
+
+
 def test_invalid_and_unavailable_snapshot_responses(monkeypatch):
-    use_historical_simulation_service(monkeypatch)
+    use_historical_simulation_service(
+        monkeypatch,
+        HistoricalSimulationSource(unavailable={"pre_round_of_32"}),
+    )
 
     invalid = client.get("/v1/simulations?snapshot=not-a-snapshot")
     unavailable = client.get("/v1/simulations?snapshot=pre_round_of_32")

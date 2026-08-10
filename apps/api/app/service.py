@@ -14,6 +14,7 @@ from modeling.src.features.context import ContextRepository
 from modeling.src.flags import flag_for_team
 from modeling.src.historical_snapshots import (
     SNAPSHOTS,
+    SNAPSHOT_ACTIVE_TEAM_COUNTS,
     get_snapshot,
     parse_utc,
     resolve_snapshot_cutoff,
@@ -62,6 +63,13 @@ KNOCKOUT_MATCH_NUMBER_RANGES = {
 COMPLETED_MATCH_STATUSES = {"completed", "finished", "ft", "aet", "pen"}
 KNOCKOUT_WINDOW_START = datetime(2026, 6, 28, tzinfo=timezone.utc)
 KNOCKOUT_WINDOW_END = datetime(2026, 7, 20, tzinfo=timezone.utc)
+SNAPSHOT_ADVANCEMENT_FIELDS = {
+    "pre_round_of_32": "round_of_32",
+    "pre_round_of_16": "round_of_16",
+    "pre_quarterfinals": "quarterfinal",
+    "pre_semifinals": "semifinal",
+    "pre_final": "final",
+}
 
 
 def _json_value(value: Any, default: Any) -> Any:
@@ -1320,7 +1328,68 @@ class PredictionService:
         )
         payload["provenance"] = _json_value(run.get("provenance"), {})
         payload["source"] = "database_snapshot"
+        active_team_ids = self._snapshot_active_team_ids(
+            snapshot,
+            database_simulation,
+            payload["teams"],
+        )
+        payload["teams"] = [
+            {**team, "is_active_at_snapshot": True}
+            for team in payload["teams"]
+            if team["team_id"] in active_team_ids
+        ]
         return payload
+
+    def _snapshot_active_team_ids(
+        self,
+        snapshot: Any,
+        database_simulation: dict[str, Any],
+        serialized_teams: list[dict[str, Any]],
+    ) -> set[str]:
+        """Resolve historical eligibility without relying on title probability."""
+        available_team_ids = {team["team_id"] for team in serialized_teams}
+        expected_count = SNAPSHOT_ACTIVE_TEAM_COUNTS[snapshot.key]
+        if snapshot.key == "pre_tournament":
+            return available_team_ids
+
+        run = database_simulation["run"]
+        provenance = _json_value(run.get("provenance"), {})
+        provenance_ids = {
+            str(team_id)
+            for team_id in (
+                provenance.get("active_team_ids", [])
+                if isinstance(provenance, dict)
+                else []
+            )
+            if str(team_id) in available_team_ids
+        }
+        if len(provenance_ids) == expected_count:
+            return provenance_ids
+
+        participant_ids = {
+            team_id
+            for row in self._official_knockout_rows(self.current_match_rows())
+            if row["_knockout_stage"] == snapshot.stage
+            for team_id in (row["_home_id"], row["_away_id"])
+            if team_id in available_team_ids
+        }
+        if len(participant_ids) == expected_count:
+            return participant_ids
+
+        probability_field = SNAPSHOT_ADVANCEMENT_FIELDS[snapshot.key]
+        probability_ids = {
+            team["team_id"]
+            for team in serialized_teams
+            if float(team.get(probability_field) or 0) > 0
+        }
+        if len(probability_ids) != expected_count:
+            LOGGER.warning(
+                "Snapshot %s eligibility fallback returned %d teams; expected %d",
+                snapshot.key,
+                len(probability_ids),
+                expected_count,
+            )
+        return probability_ids
 
     def _database_simulation_payload(
         self, database_simulation: dict[str, Any]

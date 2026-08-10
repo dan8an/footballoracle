@@ -70,6 +70,14 @@ SNAPSHOTS = (
     ),
 )
 SNAPSHOTS_BY_KEY = {snapshot.key: snapshot for snapshot in SNAPSHOTS}
+SNAPSHOT_ACTIVE_TEAM_COUNTS = {
+    "pre_tournament": 48,
+    "pre_round_of_32": 32,
+    "pre_round_of_16": 16,
+    "pre_quarterfinals": 8,
+    "pre_semifinals": 4,
+    "pre_final": 2,
+}
 
 
 def parse_utc(value: Any) -> datetime | None:
