@@ -19,8 +19,33 @@ const snapshots: SimulationSnapshot[] = [
   cutoff_at: `2026-07-${String(index + 1).padStart(2, "0")}T17:00:00Z`,
   sort_order: index + 1,
   description: `${label} description`,
-  available: key !== "pre_semifinals",
+  available: true,
 }));
+
+const expectedProbabilityHeaders: Record<
+  SimulationSnapshot["key"],
+  string[]
+> = {
+  pre_tournament: [
+    "Round of 32",
+    "Round of 16",
+    "Quarterfinal",
+    "Semifinal",
+    "Final",
+    "Champion",
+  ],
+  pre_round_of_32: [
+    "Round of 16",
+    "Quarterfinal",
+    "Semifinal",
+    "Final",
+    "Champion",
+  ],
+  pre_round_of_16: ["Quarterfinal", "Semifinal", "Final", "Champion"],
+  pre_quarterfinals: ["Semifinal", "Final", "Champion"],
+  pre_semifinals: ["Final", "Champion"],
+  pre_final: ["Champion"],
+};
 
 function simulation(
   key: SimulationSnapshot["key"],
@@ -65,7 +90,12 @@ function renderPage(
       queries: { staleTime: Infinity, retry: false, refetchOnMount: false },
     },
   });
-  queryClient.setQueryData(["simulation-snapshots"], snapshots);
+  queryClient.setQueryData(
+    ["simulation-snapshots"],
+    snapshots.map((snapshot) =>
+      snapshot.key === errorKey ? { ...snapshot, available: false } : snapshot,
+    ),
+  );
   for (const [key, value] of Object.entries(simulations)) {
     queryClient.setQueryData(["historical-simulation", key], value);
   }
@@ -92,6 +122,10 @@ function renderPage(
       </MemoryRouter>
     </QueryClientProvider>,
   ).replaceAll("<!-- -->", "");
+}
+
+function tableHeaders(html: string): string[] {
+  return [...html.matchAll(/<th>([^<]+)<\/th>/g)].map((match) => match[1]);
 }
 
 describe("Historical simulation explorer", () => {
@@ -133,6 +167,52 @@ describe("Historical simulation explorer", () => {
     expect(html).toContain(
       '<option value="pre_round_of_16" selected="">Before Round of 16</option>',
     );
+  });
+
+  it.each(Object.entries(expectedProbabilityHeaders))(
+    "%s shows only future advancement stages",
+    (key, expectedHeaders) => {
+      const snapshotKey = key as SimulationSnapshot["key"];
+      const html = renderPage(`/simulations?snapshot=${snapshotKey}`, {
+        [snapshotKey]: simulation(snapshotKey),
+      });
+
+      expect(tableHeaders(html)).toEqual(["Team", ...expectedHeaders]);
+    },
+  );
+
+  it("shows a 100% probability when its stage is still in the future", () => {
+    const data = simulation("pre_quarterfinals");
+    data.teams[0].semifinal = 1;
+
+    const html = renderPage("/simulations?snapshot=pre_quarterfinals", {
+      pre_quarterfinals: data,
+    });
+
+    expect(tableHeaders(html)).toEqual([
+      "Team",
+      "Semifinal",
+      "Final",
+      "Champion",
+    ]);
+    expect(html).toContain("<td>100%</td>");
+  });
+
+  it("does not remove or modify probability fields from the API data", () => {
+    const data = simulation("pre_final");
+    const originalTeam = { ...data.teams[0] };
+
+    renderPage("/simulations?snapshot=pre_final", { pre_final: data });
+
+    expect(data.teams[0]).toEqual(originalTeam);
+    expect(data.teams[0]).toMatchObject({
+      round_of_32: 0.8,
+      round_of_16: 0.6,
+      quarterfinal: 0.4,
+      semifinal: 0.3,
+      final: 0.2,
+      champion: 0.187,
+    });
   });
 
   it("does not render teams explicitly marked inactive", () => {

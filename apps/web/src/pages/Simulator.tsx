@@ -17,25 +17,49 @@ const reconstructionLabels: Record<
   retrospective_reconstruction: "Cutoff-safe historical reconstruction",
 };
 
-const probabilityColumns: {
-  key: keyof Pick<
-    SimulationTeam,
-    | "round_of_32"
-    | "round_of_16"
-    | "quarterfinal"
-    | "semifinal"
-    | "final"
-    | "champion"
-  >;
-  label: string;
-}[] = [
-  { key: "round_of_32", label: "Round of 32" },
-  { key: "round_of_16", label: "Round of 16" },
-  { key: "quarterfinal", label: "Quarterfinal" },
-  { key: "semifinal", label: "Semifinal" },
-  { key: "final", label: "Final" },
-  { key: "champion", label: "Champion" },
-];
+type ProbabilityField = keyof Pick<
+  SimulationTeam,
+  | "round_of_32"
+  | "round_of_16"
+  | "quarterfinal"
+  | "semifinal"
+  | "final"
+  | "champion"
+>;
+
+const probabilityLabels: Record<ProbabilityField, string> = {
+  round_of_32: "Round of 32",
+  round_of_16: "Round of 16",
+  quarterfinal: "Quarterfinal",
+  semifinal: "Semifinal",
+  final: "Final",
+  champion: "Champion",
+};
+
+const visibleProbabilityFields: Record<
+  SimulationSnapshot["key"],
+  ProbabilityField[]
+> = {
+  pre_tournament: [
+    "round_of_32",
+    "round_of_16",
+    "quarterfinal",
+    "semifinal",
+    "final",
+    "champion",
+  ],
+  pre_round_of_32: [
+    "round_of_16",
+    "quarterfinal",
+    "semifinal",
+    "final",
+    "champion",
+  ],
+  pre_round_of_16: ["quarterfinal", "semifinal", "final", "champion"],
+  pre_quarterfinals: ["semifinal", "final", "champion"],
+  pre_semifinals: ["final", "champion"],
+  pre_final: ["champion"],
+};
 
 function formatCutoff(value: string) {
   return new Intl.DateTimeFormat(undefined, {
@@ -95,9 +119,7 @@ export function Simulator() {
         data.teams.filter((team) => team.is_active_at_snapshot !== false),
       )
     : [];
-  const visibleColumns = probabilityColumns.filter(({ key }) =>
-    rankedTeams.some((team) => typeof team[key] === "number"),
-  );
+  const visibleFields = visibleProbabilityFields[selectedSnapshot.key];
 
   return (
     <section>
@@ -167,8 +189,8 @@ export function Simulator() {
               <thead>
                 <tr>
                   <th>Team</th>
-                  {visibleColumns.map((column) => (
-                    <th key={column.key}>{column.label}</th>
+                  {visibleFields.map((field) => (
+                    <th key={field}>{probabilityLabels[field]}</th>
                   ))}
                 </tr>
               </thead>
@@ -181,12 +203,12 @@ export function Simulator() {
                         {team.team_name}
                       </strong>
                     </td>
-                    {visibleColumns.map((column) => (
-                      <td key={column.key}>
-                        {column.key === "champion" ? (
-                          <b>{percent(team[column.key])}</b>
+                    {visibleFields.map((field) => (
+                      <td key={field}>
+                        {field === "champion" ? (
+                          <b>{percent(team[field])}</b>
                         ) : (
-                          percent(team[column.key])
+                          percent(team[field])
                         )}
                       </td>
                     ))}
